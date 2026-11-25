@@ -4,20 +4,15 @@ import Markdown from 'react-markdown';
 import Button from './components/Button';
 import { ProcessingState, ProcessingSettings, PixelData, DitherMethod, ImageAdjustments } from './types';
 import { processImage, trimSolidBorder, generateTransparencyMask, createMaskedPreviewUrl, pairKey } from './services/imageProcessor';
-import { encodeBMP, encodeBMP4bpp, encodeEditorBin, TVC_PALETTE_MAP_256K, TVCEditorMode, DEFAULT_ACTIVE_COLORS } from './services/bmpEncoder';
+import { encodeBMP, encodeBMP4bpp, encodeEditorBin, TVCEditorMode, DEFAULT_ACTIVE_COLORS } from './services/bmpEncoder';
 import PixelEditor from './PixelEditor';
 import { compressZX7 } from './services/zx7';
-import { findBestSettings, findBestColors } from './services/autoTuner';
+import { findBestColors } from './services/autoTuner';
+import { runAutoTune, AUTO_TUNE_ABORTED } from './services/autoTuneClient';
 import huManual from './USER_MANUAL_HU.md?raw';
 import enManual from './USER_MANUAL_EN.md?raw';
+import { FIXED_PALETTE } from './services/palette';
 
-// Strict 15-color palette as requested
-const FIXED_PALETTE = [
-  "#000000", "#000092", "#920000", "#920092", 
-  "#0000FF", "#FF0000", "#FF00FF", "#009200", 
-  "#009292", "#929200", "#929292", "#00FF00", 
-  "#00FFFF", "#FFFF00", "#FFFFFF"
-];
 
 const TVC_MODES = {
   MODE_16: 'tvc-16' as const,
@@ -33,25 +28,6 @@ const ERROR_DIFFUSION_METHODS: DitherMethod[] = [
   'floyd-steinberg', 'atkinson', 'sierra-lite', 'stucki', 'burkes', 'jarvis', 'pattern-tvc-diffusion', 'ostromoukhov'
 ];
 
-// Mapping from FIXED_PALETTE index to TVC Hardware Color Code (IGRB)
-// 0: fekete -> 0000 (1. fekete mint tényleges rajzolószín; a 9. fekete / 1000 átlátszóságra van fenntartva)
-const TVC_PALETTE_MAP = [
-  0,  // 0: Black (#000000) -> 0000 (1. fekete)
-  1,  // 1: Dark Blue (#000092) -> 0001
-  2,  // 2: Dark Red (#920000) -> 0010
-  3,  // 3: Dark Purple (#920092) -> 0011
-  9,  // 4: Bright Blue (#0000FF) -> 1001
-  10, // 5: Bright Red (#FF0000) -> 1010
-  11, // 6: Bright Purple (#FF00FF) -> 1011
-  4,  // 7: Dark Green (#009200) -> 0100
-  5,  // 8: Dark Cyan (#009292) -> 0101
-  6,  // 9: Dark Yellow (#929200) -> 0110
-  7,  // 10: Grey (#929292) -> 0111
-  12, // 11: Bright Green (#00FF00) -> 1100
-  13, // 12: Bright Cyan (#00FFFF) -> 1101
-  14, // 13: Bright Yellow (#FFFF00) -> 1110
-  15  // 14: White (#FFFFFF) -> 1111
-];
 
 const DEFAULT_ADJUSTMENTS: ImageAdjustments = {
   brightness: 0,
@@ -2923,10 +2899,10 @@ const App: React.FC = () => {
         backgroundColor: settings.backgroundColor
       };
 
-      const { adjustments, ditherMethod, selectedColors } = await findBestSettings(
+      const { adjustments, ditherMethod, selectedColors } = await runAutoTune(
         sourceImage,
         settings.outputMode,
-        settings.selectedColors,
+        settings.selectedColors ?? [],
         (progress) => setAutoTuneProgress(progress),
         autoTuneAbortController.current.signal,
         tuningStrategy,
@@ -2940,7 +2916,7 @@ const App: React.FC = () => {
         ...(selectedColors ? { selectedColors } : {})
       });
     } catch (error) {
-      if (error instanceof Error && error.message === 'Auto-tune aborted') {
+      if (error instanceof Error && error.message === AUTO_TUNE_ABORTED) {
         console.log('Auto-tuning cancelled by user');
       } else {
         console.error('Auto-tuning failed:', error);
@@ -3411,111 +3387,15 @@ const App: React.FC = () => {
     URL.revokeObjectURL(link.href);
   };
 
+  // Raw TVC video-RAM dump. Shares the Pixel Editor's encoder so both export
+  // paths produce identical bytes (incl. the transparency mask, 9th black).
   const getBinData = (data: PixelData | null): Uint8Array | null => {
     if (!data) return null;
-    
-    const width = data.width;
-    const height = data.height;
-    const indices = data.indices;
-
-    let stride = Math.ceil(width / 2);
-    if (settings.resolutionMode !== 'tvc256k') {
-      if (settings.outputMode === 'tvc-4') stride = Math.ceil(width / 4);
-      if (settings.outputMode === 'tvc-2') stride = Math.ceil(width / 8);
-    }
-
-    const binSize = stride * height;
-    const buffer = new Uint8Array(binSize);
-    
-    let bufIdx = 0;
-    for (let y = 0; y < height; y++) {
-      if (settings.resolutionMode === 'tvc256k') {
-        for (let x = 0; x < width; x += 2) {
-          const p1Idx = y * width + x;
-          const p2Idx = y * width + x + 1;
-
-          const isMasked1 = transparencyMask ? (transparencyMask[p1Idx] === 1) : false;
-          const isMasked2 = transparencyMask ? (x + 1 < width && transparencyMask[p2Idx] === 1) : false;
-
-          const c1 = isMasked1 ? 8 : (TVC_PALETTE_MAP_256K[indices[p1Idx]] ?? 0);
-          const c2 = isMasked2 ? 8 : ((x + 1 < width) ? (TVC_PALETTE_MAP_256K[indices[p2Idx]] ?? 0) : 0);
-
-          // 1 point (x) upper 4 bits, 1 point (x+1) lower 4 bits (IRGB 08.bmp standard)
-          const byte = ((c1 & 0x0F) << 4) | (c2 & 0x0F);
-          buffer[bufIdx++] = byte;
-        }
-      } else if (settings.outputMode === 'tvc-16') {
-        for (let x = 0; x < width; x += 2) {
-          const idx1 = indices[y * width + x];
-          const idx2 = (x + 1 < width) ? indices[y * width + x + 1] : 0;
-
-          const c1 = TVC_PALETTE_MAP[idx1];
-          const c2 = TVC_PALETTE_MAP[idx2];
-
-          const i1 = (c1 >> 3) & 1;
-          const g1 = (c1 >> 2) & 1;
-          const r1 = (c1 >> 1) & 1;
-          const b1 = (c1 >> 0) & 1;
-
-          const i2 = (c2 >> 3) & 1;
-          const g2 = (c2 >> 2) & 1;
-          const r2 = (c2 >> 1) & 1;
-          const b2 = (c2 >> 0) & 1;
-
-          const byte = (i1 << 7) | (i2 << 6) | (g1 << 5) | (g2 << 4) | (r1 << 3) | (r2 << 2) | (b1 << 1) | (b2 << 0);
-          buffer[bufIdx++] = byte;
-        }
-      } else if (settings.outputMode === 'tvc-4') {
-        for (let x = 0; x < width; x += 4) {
-          const getVal = (offset: number) => {
-            if (x + offset >= width) return 0;
-            const globalIdx = indices[y * width + x + offset];
-            const localIdx = settings.selectedColors ? settings.selectedColors.indexOf(globalIdx) : -1;
-            if (localIdx === -1) {
-              console.warn(`[BinExport] Warning: Pixel index ${globalIdx} is missing from selectedColors! Fallback to 0.`);
-            }
-            return Math.max(0, localIdx);
-          };
-          const v1 = getVal(0);
-          const v2 = getVal(1);
-          const v3 = getVal(2);
-          const v4 = getVal(3);
-
-          const v1_c0 = v1 & 1; const v1_c1 = (v1 >> 1) & 1;
-          const v2_c0 = v2 & 1; const v2_c1 = (v2 >> 1) & 1;
-          const v3_c0 = v3 & 1; const v3_c1 = (v3 >> 1) & 1;
-          const v4_c0 = v4 & 1; const v4_c1 = (v4 >> 1) & 1;
-
-          const byte = (v1_c0 << 7) | (v2_c0 << 6) | (v3_c0 << 5) | (v4_c0 << 4) | (v1_c1 << 3) | (v2_c1 << 2) | (v3_c1 << 1) | (v4_c1 << 0);
-          buffer[bufIdx++] = byte;
-        }
-      } else if (settings.outputMode === 'tvc-2') {
-        for (let x = 0; x < width; x += 8) {
-          const getVal = (offset: number) => {
-            if (x + offset >= width) return 0;
-            const globalIdx = indices[y * width + x + offset];
-            const localIdx = settings.selectedColors ? settings.selectedColors.indexOf(globalIdx) : -1;
-            if (localIdx === -1) {
-              console.warn(`[BinExport] Warning: Pixel index ${globalIdx} is missing from selectedColors! Fallback to 0.`);
-            }
-            return Math.max(0, localIdx);
-          };
-          const v1 = getVal(0) & 1;
-          const v2 = getVal(1) & 1;
-          const v3 = getVal(2) & 1;
-          const v4 = getVal(3) & 1;
-          const v5 = getVal(4) & 1;
-          const v6 = getVal(5) & 1;
-          const v7 = getVal(6) & 1;
-          const v8 = getVal(7) & 1;
-
-          const byte = (v1 << 7) | (v2 << 6) | (v3 << 5) | (v4 << 4) | (v5 << 3) | (v6 << 2) | (v7 << 1) | (v8 << 0);
-          buffer[bufIdx++] = byte;
-        }
-      }
-    }
-    return buffer;
-  }
+    const mode: TVCEditorMode = settings.resolutionMode === 'tvc256k' ? 'tvc256k' : settings.outputMode;
+    const mask = (mode === 'tvc-16' || mode === 'tvc256k') && transparencyMask && transparencyMask.length === data.indices.length
+      ? transparencyMask : null;
+    return encodeEditorBin(data.width, data.height, data.indices, mask, mode, settings.selectedColors);
+  };
 
   const downloadBin = async () => {
     const dataToSave = await getProcessedDataForSaving();
