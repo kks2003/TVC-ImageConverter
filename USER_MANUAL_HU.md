@@ -175,3 +175,33 @@ A teljes kivágás-áthelyezés műveletet a program **egyetlen visszavonható l
 *   Ha a kép sok apró szöveget tartalmaz, próbálja ki a 2 vagy 4 színű módot, mivel a nagyobb vízszintes felbontás sokkal olvashatóbbá teszi a szöveget.
 *   Amikor valódi CRT TV-re készít képeket, ne feledje, hogy a színek kissé összefolynak; a "Pattern TVC" dithering módszert kifejezetten ennek a keveredésnek a kihasználására tervezték.
 *   **Haladó tipp:** Fotók esetén a legjobb eredmény érdekében próbálja meg egyszerre bekapcsolni a **Percepciós színtávolságot** és a **Serpentin szkennelést**. Ha a kép kicsit "koszosnak" tűnik, egy kevés **Élkiemelés** (20-30% körül) óriási különbséget jelenthet.
+
+## 5. Új funkciók
+
+### 5.1. Beillesztés vágólapról
+Képet a **Ctrl+V** billentyűkkel is betölthet (pl. képernyőképet vagy böngészőből másolt képet). A beillesztett kép exportált fájljai a `clipboard` nevet kapják. Szövegmezőben és a Pixel Szerkesztőben a Ctrl+V a megszokott módon működik.
+
+### 5.2. Előtte / utána összehasonlítás
+Az eredmény előnézet jobb felső sarkában lévő **összehasonlítás** gombbal az eredeti kép az eredményre kerül egy húzható elválasztóval (a ← → nyilakkal is mozgatható). Az eredeti kép pontosan ugyanúgy van kivágva és nagyítva, mint a konvertált, így a két oldal fedi egymást. Közben a görgővel továbbra is lehet nagyítani.
+
+### 5.3. Színárnyalat és színhőmérséklet
+A Képbeállítások között két új csúszka van: a **Színárnyalat** elforgatja a színeket (fokban), a **Színhőmérséklet** melegebbé (narancsos) vagy hidegebbé (kékes) teszi a képet. Mindkettő a többi korrekció előtt hat, mint egy fehéregyensúly. 0 értéknél semmit nem változtatnak.
+
+### 5.4. Beállítások visszavonása
+A konverter minden beállításváltozása visszavonható: **Ctrl+Z** (visszavonás), **Ctrl+Y** vagy **Ctrl+Shift+Z** (újra), illetve a Képbeállítások fejlécében lévő nyilakkal. Egy csúszka húzása vagy több gyors görgetés egy lépésnek számít. Új kép betöltésekor az előzmények törlődnek.
+
+### 5.5. Dither módszerek összehasonlítása
+A Dither mód panel fejlécében lévő **rács** gombbal a kép mind a 20 módszerrel elkészül egymás mellett (a többi beállítás változatlan). Kattintson arra, amelyik tetszik; az Esc bezárja az ablakot.
+
+### 5.6. Régiónkénti dithering
+Az eredmény előnézeten lévő **ecset** gombbal kijelölhet egy területet, amely saját dither módszert kap (pl. finomabb az arcon, sima a háttéren). Bal gombbal festhet, jobb gombbal törölhet; a módszert és az ecset méretét az előnézet alatti sávban választhatja. A mentett fájlok már a kevert eredményt tartalmazzák. Másik színmódra váltáskor a festett terület nem érvényes.
+
+### 5.7. Pixel Szerkesztő: szöveg, bélyegző, rétegek
+- **Szöveg:** a T eszközzel írjon be egy feliratot, válasszon méretet, betűtípust és félkövért, majd kattintson a képre (bal gomb: elsődleges, jobb gomb: másodlagos szín). A felirat lebegő kijelölésként jelenik meg, áttetsző háttérrel: húzza a helyére, majd Enter. Az ékezetes betűk is működnek; 16 színű módban a szöveg a 2:1-es pixeleken is arányos marad.
+- **Bélyegző:** lebegő kijelölésnél az **S** billentyű (vagy a bélyegző gomb) lenyomatot hagy, és a kijelölés tovább mozgatható. Az Esc az egész műveletet visszavonja, az Enter egy lépésként rögzíti.
+- **Másolás / beillesztés:** **Ctrl+C** a lebegő kijelölést másolja, **Ctrl+V** új lebegő kijelölésként beilleszti.
+- **Rétegek:** a bal oldali Rétegek panelen új réteget adhat hozzá, törölhet, sorrendet állíthat, összevonhat és elrejthet. A felső rétegek alapból átlátszók; minden eszköz az aktív rétegen dolgozik. Mentéskor a látható rétegek összefésülve kerülnek a fájlba.
+- **Radír:** felső rétegen átlátszóvá teszi a pixeleket, a háttérrétegen háttérszínnel fest.
+
+### 5.8. Telepíthető alkalmazás
+Az online változat (GitHub Pages) a böngésző „Telepítés” / „Hozzáadás a kezdőképernyőhöz” menüjével alkalmazásként telepíthető, és egyszeri megnyitás után internet nélkül is elindul.
