@@ -226,7 +226,16 @@ const sk: Translation = {
   ttRedo: "Znova použiť zmenu nastavení (Ctrl+Y alebo Ctrl+Shift+Z)",
   ditherGridTitle: "Porovnanie metód ditheringu",
   ditherGridHint: "Ten istý obrázok každou metódou, ostatné nastavenia nezmenené. Klikni na ten, ktorý sa ti páči.",
-  ttDitherGrid: "Vyskúšať všetky metódy ditheringu vedľa seba"
+  ttDitherGrid: "Vyskúšať všetky metódy ditheringu vedľa seba",
+  editorText: "Text",
+  editorTextPlaceholder: "Text nápisu",
+  editorTextSize: "Veľkosť",
+  editorTextFont: "Písmo",
+  editorTextBold: "Tučné",
+  editorTextHint: "Klikni na obrázok na umiestnenie (ľavé: primárna, pravé: sekundárna farba), potiahni ho na miesto a stlač Enter.",
+  editorStamp: "Odtlačiť kópiu sem a pokračovať v presúvaní výberu (S)",
+  editorCopy: "Kopírovať výber (Ctrl+C)",
+  editorPaste: "Vložiť (Ctrl+V)"
 };
 
 export default sk;

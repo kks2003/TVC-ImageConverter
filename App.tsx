@@ -955,7 +955,16 @@ const App: React.FC = () => {
           openError: t.editorOpenError,
           binSizeMismatchTitle: t.editorBinSizeMismatchTitle,
           binSizeMismatchHint: t.editorBinSizeMismatchHint,
-          load: t.editorLoad
+          load: t.editorLoad,
+          text: t.editorText,
+          textPlaceholder: t.editorTextPlaceholder,
+          textSize: t.editorTextSize,
+          textFont: t.editorTextFont,
+          textBold: t.editorTextBold,
+          textHint: t.editorTextHint,
+          stamp: t.editorStamp,
+          copy: t.editorCopy,
+          paste: t.editorPaste
         }}
         lang={lang}
         onLangChange={(l) => setLang(l as Language)}

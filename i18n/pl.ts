@@ -226,7 +226,16 @@ const pl: Translation = {
   ttRedo: "Ponów zmianę ustawień (Ctrl+Y lub Ctrl+Shift+Z)",
   ditherGridTitle: "Porównanie metod ditheringu",
   ditherGridHint: "Ten sam obraz każdą metodą, pozostałe ustawienia bez zmian. Kliknij ten, który ci się podoba.",
-  ttDitherGrid: "Wypróbuj wszystkie metody ditheringu obok siebie"
+  ttDitherGrid: "Wypróbuj wszystkie metody ditheringu obok siebie",
+  editorText: "Tekst",
+  editorTextPlaceholder: "Tekst do wstawienia",
+  editorTextSize: "Rozmiar",
+  editorTextFont: "Czcionka",
+  editorTextBold: "Pogrubienie",
+  editorTextHint: "Kliknij na obraz, aby go umieścić (lewy: kolor główny, prawy: drugi kolor), przeciągnij na miejsce i naciśnij Enter.",
+  editorStamp: "Odbij kopię tutaj i przesuwaj zaznaczenie dalej (S)",
+  editorCopy: "Kopiuj zaznaczenie (Ctrl+C)",
+  editorPaste: "Wklej (Ctrl+V)"
 };
 
 export default pl;

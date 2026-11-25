@@ -226,7 +226,16 @@ const es: Translation = {
   ttRedo: "Rehacer cambio de ajustes (Ctrl+Y o Ctrl+Mayús+Z)",
   ditherGridTitle: "Comparar métodos de tramado",
   ditherGridHint: "La misma imagen con cada método, el resto de ajustes sin cambios. Haz clic en el que te guste.",
-  ttDitherGrid: "Probar todos los métodos de tramado uno al lado del otro"
+  ttDitherGrid: "Probar todos los métodos de tramado uno al lado del otro",
+  editorText: "Texto",
+  editorTextPlaceholder: "Texto a colocar",
+  editorTextSize: "Tamaño",
+  editorTextFont: "Fuente",
+  editorTextBold: "Negrita",
+  editorTextHint: "Haz clic en la imagen para colocarlo (izquierdo: color principal, derecho: secundario), arrástralo a su sitio y pulsa Intro.",
+  editorStamp: "Estampar una copia aquí y seguir moviendo la selección (S)",
+  editorCopy: "Copiar selección (Ctrl+C)",
+  editorPaste: "Pegar (Ctrl+V)"
 };
 
 export default es;

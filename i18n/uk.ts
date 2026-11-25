@@ -226,7 +226,16 @@ const uk: Translation = {
   ttRedo: "Повторити зміну налаштувань (Ctrl+Y або Ctrl+Shift+Z)",
   ditherGridTitle: "Порівняння методів дизерингу",
   ditherGridHint: "Те саме зображення всіма методами, інші налаштування без змін. Натисніть на той, що подобається.",
-  ttDitherGrid: "Спробувати всі методи дизерингу поруч"
+  ttDitherGrid: "Спробувати всі методи дизерингу поруч",
+  editorText: "Текст",
+  editorTextPlaceholder: "Текст напису",
+  editorTextSize: "Розмір",
+  editorTextFont: "Шрифт",
+  editorTextBold: "Жирний",
+  editorTextHint: "Клацніть на зображенні, щоб розмістити (ліва кнопка: основний колір, права: додатковий), перетягніть на місце й натисніть Enter.",
+  editorStamp: "Залишити копію тут і рухати виділення далі (S)",
+  editorCopy: "Копіювати виділення (Ctrl+C)",
+  editorPaste: "Вставити (Ctrl+V)"
 };
 
 export default uk;

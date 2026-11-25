@@ -226,7 +226,16 @@ const de: Translation = {
   ttRedo: "Einstellungsänderung wiederholen (Strg+Y oder Strg+Umschalt+Z)",
   ditherGridTitle: "Dither-Verfahren vergleichen",
   ditherGridHint: "Dasselbe Bild mit jedem Verfahren, alle anderen Einstellungen unverändert. Klicke auf das, das dir gefällt.",
-  ttDitherGrid: "Alle Dither-Verfahren nebeneinander ausprobieren"
+  ttDitherGrid: "Alle Dither-Verfahren nebeneinander ausprobieren",
+  editorText: "Text",
+  editorTextPlaceholder: "Einzufügender Text",
+  editorTextSize: "Größe",
+  editorTextFont: "Schrift",
+  editorTextBold: "Fett",
+  editorTextHint: "Klicke ins Bild, um ihn zu platzieren (links: Primär-, rechts: Sekundärfarbe), ziehe ihn an die Stelle und drücke Enter.",
+  editorStamp: "Kopie hier stempeln und Auswahl weiter verschieben (S)",
+  editorCopy: "Auswahl kopieren (Strg+C)",
+  editorPaste: "Einfügen (Strg+V)"
 };
 
 export default de;

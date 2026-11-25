@@ -226,7 +226,16 @@ const ru: Translation = {
   ttRedo: "Повторить изменение настроек (Ctrl+Y или Ctrl+Shift+Z)",
   ditherGridTitle: "Сравнение методов дизеринга",
   ditherGridHint: "Одно и то же изображение всеми методами, остальные настройки без изменений. Нажмите на понравившийся.",
-  ttDitherGrid: "Попробовать все методы дизеринга рядом"
+  ttDitherGrid: "Попробовать все методы дизеринга рядом",
+  editorText: "Текст",
+  editorTextPlaceholder: "Текст надписи",
+  editorTextSize: "Размер",
+  editorTextFont: "Шрифт",
+  editorTextBold: "Жирный",
+  editorTextHint: "Щёлкните по изображению, чтобы разместить (левая кнопка: основной цвет, правая: дополнительный), перетащите на место и нажмите Enter.",
+  editorStamp: "Оставить копию здесь и двигать выделение дальше (S)",
+  editorCopy: "Копировать выделение (Ctrl+C)",
+  editorPaste: "Вставить (Ctrl+V)"
 };
 
 export default ru;

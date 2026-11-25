@@ -225,7 +225,16 @@ const en: Translation = {
   ttRedo: "Redo settings change (Ctrl+Y or Ctrl+Shift+Z)",
   ditherGridTitle: "Compare dither methods",
   ditherGridHint: "The same image with every method, all other settings unchanged. Click the one you like.",
-  ttDitherGrid: "Try every dither method side by side"
+  ttDitherGrid: "Try every dither method side by side",
+  editorText: "Text",
+  editorTextPlaceholder: "Text to place",
+  editorTextSize: "Size",
+  editorTextFont: "Font",
+  editorTextBold: "Bold",
+  editorTextHint: "Click on the image to place it (left: primary, right: secondary colour), drag it into place, then press Enter.",
+  editorStamp: "Stamp a copy here and keep moving the selection (S)",
+  editorCopy: "Copy selection (Ctrl+C)",
+  editorPaste: "Paste (Ctrl+V)"
 };
 
 export default en;

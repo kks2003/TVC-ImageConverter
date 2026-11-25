@@ -2,14 +2,15 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import {
   ArrowLeft, Pencil, Minus, Square, Circle, PaintBucket,
   ZoomIn, ZoomOut, Download, FolderOpen, Grid3x3, LayoutGrid, Crop, RotateCcw, Undo2, Redo2, Eye, EyeOff, Languages,
-  FlipHorizontal, FlipVertical, ArrowUp, ArrowDown, ArrowRight, Check, X as XIcon
+  FlipHorizontal, FlipVertical, ArrowUp, ArrowDown, ArrowRight, Check, X as XIcon, Type, Stamp, Copy, ClipboardPaste
 } from 'lucide-react';
+import { rasterizeText, TextFont } from './services/textRaster';
 import { decodeTVCBmp, decodeTVCBin, guessBinMode, BIN_SIZES, DecodedTVCImage, TVCEditorMode } from './services/bmpEncoder';
 import { decompressZX7 } from './services/zx7';
 
 // --- Types -------------------------------------------------------------
 
-export type EditorTool = 'pencil' | 'line' | 'rect' | 'rect-filled' | 'ellipse' | 'fill' | 'select';
+export type EditorTool = 'pencil' | 'line' | 'rect' | 'rect-filled' | 'ellipse' | 'fill' | 'select' | 'text';
 
 export interface PixelEditorLabels {
   back?: string;
@@ -62,6 +63,15 @@ export interface PixelEditorLabels {
   binSizeMismatchTitle?: string;
   binSizeMismatchHint?: string;
   load?: string;
+  text?: string;
+  textPlaceholder?: string;
+  textSize?: string;
+  textFont?: string;
+  textBold?: string;
+  textHint?: string;
+  stamp?: string;
+  copy?: string;
+  paste?: string;
 }
 
 export interface PixelEditorProps {
@@ -114,6 +124,12 @@ const hexToRgb = (hex: string) => {
 };
 
 const clampInt = (v: number, min: number, max: number) => Math.max(min, Math.min(max, Math.round(v)));
+
+// Keyboard shortcuts must not fire while the user types into a text box
+// (e.g. the text tool's input).
+const isTypingTarget = (el: EventTarget | null) =>
+  el instanceof HTMLElement && (el.isContentEditable || el.tagName === 'TEXTAREA' ||
+    (el.tagName === 'INPUT' && !['range', 'checkbox', 'radio', 'button'].includes((el as HTMLInputElement).type)));
 
 // --- Drawing primitives (operate directly on the index buffer) ---------
 
@@ -372,7 +388,7 @@ const PixelEditor: React.FC<PixelEditorProps> = ({
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (!(e.ctrlKey || e.metaKey)) return;
+      if (!(e.ctrlKey || e.metaKey) || isTypingTarget(e.target)) return;
       if (e.key === 'z' || e.key === 'Z') {
         e.preventDefault();
         if (e.shiftKey) handleRedo(); else handleUndo();
@@ -467,7 +483,18 @@ const PixelEditor: React.FC<PixelEditorProps> = ({
   // you commit (Enter, the check button, or clicking outside it). Cancel
   // (Esc) puts it back where it came from. Only the commit pushes undo, so
   // one undo removes the whole cut-and-move as a single step.
-  const [floatSel, setFloatSel] = useState<{ x: number; y: number; w: number; h: number; data: Uint8Array; origX: number; origY: number } | null>(null);
+  // A lifted selection (or placed text / pasted clip) floating above the
+  // image until committed. `opaque`, when present, marks which pixels are
+  // part of it; the rest let the image show through (used for text).
+  const [floatSel, setFloatSel] = useState<{ x: number; y: number; w: number; h: number; data: Uint8Array; origX: number; origY: number; opaque?: Uint8Array } | null>(null);
+  const floatSelRef = useRef<typeof floatSel>(null);
+  floatSelRef.current = floatSel;
+  const clipboardRef = useRef<{ w: number; h: number; data: Uint8Array; opaque?: Uint8Array } | null>(null);
+  const [hasClip, setHasClip] = useState(false);
+  const [textValue, setTextValue] = useState('TVC');
+  const [textSize, setTextSize] = useState(12);
+  const [textFont, setTextFont] = useState<TextFont>('mono');
+  const [textBold, setTextBold] = useState(true);
   const selDragRef = useRef<{ mode: 'marquee' | 'move'; startX: number; startY: number; curX: number; curY: number; grabDX: number; grabDY: number } | null>(null);
   const blankIdx = selectableColors[0] ?? 0;
 
@@ -487,6 +514,7 @@ const PixelEditor: React.FC<PixelEditorProps> = ({
         for (let xx = 0; xx < fs.w; xx++) {
           const tx = fs.x + xx;
           if (tx < 0 || tx >= width) continue;
+          if (fs.opaque && !fs.opaque[yy * fs.w + xx]) continue;
           const idx = fs.data[yy * fs.w + xx];
           let r: number, g: number, b: number;
           if (idx === TRANSPARENT_INDEX) {
@@ -530,44 +558,109 @@ const PixelEditor: React.FC<PixelEditorProps> = ({
       for (let xx = 0; xx < fs.w; xx++) {
         const tx = fs.x + xx;
         if (tx < 0 || tx >= width) continue;
+        if (fs.opaque && !fs.opaque[yy * fs.w + xx]) continue;
         buf[ty * width + tx] = fs.data[yy * fs.w + xx];
       }
     }
   };
 
+  // Side effects live outside setState updaters (React may run updaters
+  // twice in development, which used to record two undo steps).
   const commitFloat = useCallback(() => {
-    setFloatSel(prev => {
-      if (!prev) return null;
-      // Undo snapshot taken here (not at lift time) so the entire
-      // cut-and-move collapses into one undoable step.
-      undoStack.current.push(snapshotBeforeLift.current ?? new Uint8Array(bufferRef.current));
-      if (undoStack.current.length > UNDO_LIMIT) undoStack.current.shift();
-      redoStack.current = [];
-      snapshotBeforeLift.current = null;
-      stampFloat(prev);
-      commitRedraw();
-      setHistoryTick(t => t + 1);
-      return null;
-    });
+    const prev = floatSelRef.current;
+    if (!prev) return;
+    // Undo snapshot taken here (not at lift time) so the entire
+    // cut-and-move collapses into one undoable step.
+    undoStack.current.push(snapshotBeforeLift.current ?? new Uint8Array(bufferRef.current));
+    if (undoStack.current.length > UNDO_LIMIT) undoStack.current.shift();
+    redoStack.current = [];
+    snapshotBeforeLift.current = null;
+    stampFloat(prev);
+    floatSelRef.current = null;
+    setFloatSel(null);
+    commitRedraw();
+    setHistoryTick(t => t + 1);
     clearOverlay();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commitRedraw, clearOverlay, width, height]);
 
   const cancelFloat = useCallback(() => {
-    setFloatSel(prev => {
-      if (!prev) return null;
-      if (snapshotBeforeLift.current) {
-        bufferRef.current = new Uint8Array(snapshotBeforeLift.current);
-        snapshotBeforeLift.current = null;
-      }
-      commitRedraw();
-      return null;
-    });
+    if (!floatSelRef.current) return;
+    if (snapshotBeforeLift.current) {
+      bufferRef.current = new Uint8Array(snapshotBeforeLift.current);
+      snapshotBeforeLift.current = null;
+    }
+    floatSelRef.current = null;
+    setFloatSel(null);
+    commitRedraw();
     clearOverlay();
   }, [commitRedraw, clearOverlay]);
+
+  // Commits whatever is floating right now (synchronously) as one undo step.
+  const commitFloatNow = () => {
+    const fs = floatSelRef.current;
+    if (!fs) return;
+    undoStack.current.push(snapshotBeforeLift.current ?? new Uint8Array(bufferRef.current));
+    if (undoStack.current.length > UNDO_LIMIT) undoStack.current.shift();
+    redoStack.current = [];
+    snapshotBeforeLift.current = null;
+    stampFloat(fs);
+    floatSelRef.current = null;
+  };
+
+  // Puts new floating content on the canvas (text, pasted clip).
+  const startFloat = (fs: NonNullable<typeof floatSel>) => {
+    commitFloatNow();
+    snapshotBeforeLift.current = new Uint8Array(bufferRef.current);
+    floatSelRef.current = fs;
+    setFloatSel(fs);
+    setTool('select');
+    commitRedraw();
+    drawSelOverlay(fs);
+    setHistoryTick(t => t + 1);
+  };
+
+  // Stamp: leave a copy of the floating selection at its current place and
+  // keep it floating, so it can be moved and stamped again. Everything up to
+  // the final Enter is still one undo step (Esc removes the stamps too).
+  const stampHere = useCallback(() => {
+    const fs = floatSelRef.current;
+    if (!fs) return;
+    stampFloat(fs);
+    commitRedraw();
+    drawSelOverlay(fs);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commitRedraw, drawSelOverlay, width, height]);
+
+  const copyFloat = () => {
+    const fs = floatSelRef.current;
+    if (!fs) return;
+    clipboardRef.current = { w: fs.w, h: fs.h, data: new Uint8Array(fs.data), opaque: fs.opaque ? new Uint8Array(fs.opaque) : undefined };
+    setHasClip(true);
+  };
+
+  const pasteClip = () => {
+    const clip = clipboardRef.current;
+    if (!clip) return;
+    const cur = floatSelRef.current;
+    const at = cur ? { x: cur.x + 4, y: cur.y + 4 } : hoverPixel ?? { x: 0, y: 0 };
+    startFloat({ x: at.x, y: at.y, w: clip.w, h: clip.h, data: new Uint8Array(clip.data), opaque: clip.opaque ? new Uint8Array(clip.opaque) : undefined, origX: at.x, origY: at.y });
+  };
+
+  const placeText = (x: number, y: number, colorIdx: number) => {
+    const r = rasterizeText(textValue, textSize, textFont, textBold, pixelAspectX);
+    if (!r) return;
+    const data = new Uint8Array(r.w * r.h).fill(colorIdx);
+    // Leave the text box so Enter / arrows / S act on the placed text.
+    if (isTypingTarget(document.activeElement)) (document.activeElement as HTMLElement).blur();
+    startFloat({ x, y, w: r.w, h: r.h, data, opaque: r.opaque, origX: x, origY: y });
+  };
 
   useEffect(() => {
     if (!floatSel) return;
     const onKey = (e: KeyboardEvent) => {
+      if (isTypingTarget(e.target)) return;
+      if ((e.key === 's' || e.key === 'S') && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); stampHere(); return; }
       if (e.key === 'Enter') { e.preventDefault(); commitFloat(); }
       else if (e.key === 'Escape') { e.preventDefault(); cancelFloat(); }
       else if (e.key.startsWith('Arrow')) {
@@ -577,6 +670,7 @@ const PixelEditor: React.FC<PixelEditorProps> = ({
         setFloatSel(prev => {
           if (!prev) return prev;
           const moved = { ...prev, x: prev.x + dx, y: prev.y + dy };
+          floatSelRef.current = moved;
           drawSelOverlay(moved);
           return moved;
         });
@@ -584,7 +678,20 @@ const PixelEditor: React.FC<PixelEditorProps> = ({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [floatSel, commitFloat, cancelFloat, drawSelOverlay]);
+  }, [floatSel, commitFloat, cancelFloat, drawSelOverlay, stampHere]);
+
+  // Ctrl/Cmd+C copies the floating selection, Ctrl/Cmd+V pastes the copy as a
+  // new floating selection.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey || isTypingTarget(e.target)) return;
+      const k = e.key.toLowerCase();
+      if (k === 'c' && floatSelRef.current) { e.preventDefault(); copyFloat(); }
+      else if (k === 'v' && clipboardRef.current) { e.preventDefault(); pasteClip(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button === 1) {
@@ -604,6 +711,11 @@ const PixelEditor: React.FC<PixelEditorProps> = ({
     // Defensive: guarantee no leftover preview pixels from a previous,
     // possibly-interrupted stroke are still sitting on the overlay canvas.
     clearOverlay();
+
+    if (tool === 'text') {
+      placeText(px.x, px.y, colorIdx);
+      return;
+    }
 
     if (tool === 'select') {
       if (floatSel) {
@@ -640,7 +752,8 @@ const PixelEditor: React.FC<PixelEditorProps> = ({
       commitRedraw();
     }
     drawState.current = { active: true, button: e.button, tool, startX: px.x, startY: px.y, lastX: px.x, lastY: px.y };
-  }, [clientToPixel, tool, primaryColor, secondaryColor, thickness, width, height, commitRedraw, pushUndo, clearOverlay, floatSel, commitFloat, drawSelOverlay, checkerFill]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientToPixel, tool, primaryColor, secondaryColor, thickness, width, height, commitRedraw, pushUndo, clearOverlay, floatSel, commitFloat, drawSelOverlay, checkerFill, textValue, textSize, textFont, textBold]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (panState.current) {
@@ -665,6 +778,7 @@ const PixelEditor: React.FC<PixelEditorProps> = ({
         const nx = px.x - sd.grabDX, ny = px.y - sd.grabDY;
         if (nx !== floatSel.x || ny !== floatSel.y) {
           const moved = { ...floatSel, x: nx, y: ny };
+          floatSelRef.current = moved;
           setFloatSel(moved);
           drawSelOverlay(moved);
         }
@@ -711,6 +825,7 @@ const PixelEditor: React.FC<PixelEditorProps> = ({
             buf[(y0 + yy) * width + (x0 + xx)] = blankIdx;
           }
         const fs = { x: x0, y: y0, w, h, data, origX: x0, origY: y0 };
+        floatSelRef.current = fs;
         setFloatSel(fs);
         commitRedraw();
         drawSelOverlay(fs);
@@ -918,6 +1033,7 @@ const PixelEditor: React.FC<PixelEditorProps> = ({
               ['ellipse', Circle, l.ellipse || 'Ellipse'],
               ['fill', PaintBucket, l.fill || 'Fill'],
               ['select', Crop, l.select || 'Select / move a rectangular area'],
+              ['text', Type, l.text || 'Text'],
             ] as [EditorTool, typeof Pencil, string][]).map(([id, Icon, title]) => (
               <button
                 key={id}
@@ -935,8 +1051,13 @@ const PixelEditor: React.FC<PixelEditorProps> = ({
               <div className="flex items-center gap-1.5 shrink-0">
                 <button onClick={commitFloat} title={l.selectConfirm || 'Place here (Enter)'} className="p-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white"><Check size={18} /></button>
                 <button onClick={cancelFloat} title={l.selectCancel || 'Cancel move (Esc)'} className="p-2.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white"><XIcon size={18} /></button>
+                <button onClick={stampHere} title={l.stamp || 'Stamp a copy here and keep moving (S)'} className="p-2.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white"><Stamp size={18} /></button>
+                <button onClick={copyFloat} title={l.copy || 'Copy (Ctrl+C)'} className="p-2.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white"><Copy size={18} /></button>
               </div>
             </>
+          )}
+          {hasClip && (
+            <button onClick={pasteClip} title={l.paste || 'Paste (Ctrl+V)'} className="p-2.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white shrink-0"><ClipboardPaste size={18} /></button>
           )}
           <div className="w-px h-7 bg-slate-800 shrink-0" />
 
@@ -1020,6 +1141,39 @@ const PixelEditor: React.FC<PixelEditorProps> = ({
           )}
           <input ref={openFileInputRef} type="file" accept=".bmp,.bin,.zx7" className="hidden" onChange={handleOpenFileChange} />
         </div>
+        {tool === 'text' && (
+          <div className="max-w-[1600px] mx-auto px-3 py-2 flex flex-wrap items-center gap-3 border-t border-slate-800/60 text-sm" data-testid="text-options">
+            <Type size={16} className="text-blue-400 shrink-0" />
+            <input
+              type="text"
+              value={textValue}
+              onChange={e => setTextValue(e.target.value)}
+              placeholder={l.textPlaceholder || 'Text to place'}
+              className="bg-slate-900 border border-slate-700 rounded-md px-2 py-1 w-56 text-slate-100 focus:outline-none focus:border-blue-500"
+            />
+            <label className="flex items-center gap-1.5 text-slate-300">
+              {l.textSize || 'Size'}
+              <input
+                type="number" min={6} max={64} value={textSize}
+                onChange={e => setTextSize(clampInt(parseInt(e.target.value) || 12, 6, 64))}
+                className="bg-slate-900 border border-slate-700 rounded-md px-1.5 py-1 w-16 text-slate-100 font-mono"
+              />
+              <span className="text-slate-500 text-xs">px</span>
+            </label>
+            <label className="flex items-center gap-1.5 text-slate-300">
+              {l.textFont || 'Font'}
+              <select value={textFont} onChange={e => setTextFont(e.target.value as TextFont)} className="bg-slate-900 border border-slate-700 rounded-md px-1.5 py-1 text-slate-100">
+                <option value="mono">Mono</option>
+                <option value="sans">Sans</option>
+              </select>
+            </label>
+            <label className="flex items-center gap-1.5 text-slate-300 cursor-pointer">
+              <input type="checkbox" checked={textBold} onChange={e => setTextBold(e.target.checked)} className="accent-blue-500" />
+              {l.textBold || 'Bold'}
+            </label>
+            <span className="text-slate-500 text-xs">{l.textHint || 'Click on the image to place it (left: primary, right: secondary colour), then drag it and press Enter.'}</span>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 flex overflow-hidden min-h-0">

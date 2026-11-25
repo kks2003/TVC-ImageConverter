@@ -227,7 +227,16 @@ const hu: Translation = {
   ttRedo: "Beállítás újra (Ctrl+Y vagy Ctrl+Shift+Z)",
   ditherGridTitle: "Dither módszerek összehasonlítása",
   ditherGridHint: "Ugyanaz a kép minden módszerrel, a többi beállítás változatlan. Kattints arra, amelyik tetszik.",
-  ttDitherGrid: "Összes dither módszer kipróbálása egymás mellett"
+  ttDitherGrid: "Összes dither módszer kipróbálása egymás mellett",
+  editorText: "Szöveg",
+  editorTextPlaceholder: "A felirat szövege",
+  editorTextSize: "Méret",
+  editorTextFont: "Betűtípus",
+  editorTextBold: "Félkövér",
+  editorTextHint: "Kattints a képre a lerakáshoz (bal: elsődleges, jobb: másodlagos szín), húzd a helyére, majd Enter.",
+  editorStamp: "Lenyomat ide, a kijelölés mozgatható tovább (S)",
+  editorCopy: "Kijelölés másolása (Ctrl+C)",
+  editorPaste: "Beillesztés (Ctrl+V)"
 };
 
 export default hu;

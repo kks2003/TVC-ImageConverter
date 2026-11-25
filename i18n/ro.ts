@@ -226,7 +226,16 @@ const ro: Translation = {
   ttRedo: "Refă modificarea setărilor (Ctrl+Y sau Ctrl+Shift+Z)",
   ditherGridTitle: "Compară metodele de dithering",
   ditherGridHint: "Aceeași imagine cu fiecare metodă, celelalte setări neschimbate. Fă clic pe cea care îți place.",
-  ttDitherGrid: "Încearcă toate metodele de dithering una lângă alta"
+  ttDitherGrid: "Încearcă toate metodele de dithering una lângă alta",
+  editorText: "Text",
+  editorTextPlaceholder: "Textul de plasat",
+  editorTextSize: "Mărime",
+  editorTextFont: "Font",
+  editorTextBold: "Aldin",
+  editorTextHint: "Fă clic pe imagine pentru a-l plasa (stânga: culoarea principală, dreapta: secundară), trage-l la locul lui și apasă Enter.",
+  editorStamp: "Ștampilează o copie aici și continuă să muți selecția (S)",
+  editorCopy: "Copiază selecția (Ctrl+C)",
+  editorPaste: "Lipește (Ctrl+V)"
 };
 
 export default ro;

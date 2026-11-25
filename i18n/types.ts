@@ -225,4 +225,13 @@ export interface Translation {
   ditherGridTitle: string;
   ditherGridHint: string;
   ttDitherGrid: string;
+  editorText: string;
+  editorTextPlaceholder: string;
+  editorTextSize: string;
+  editorTextFont: string;
+  editorTextBold: string;
+  editorTextHint: string;
+  editorStamp: string;
+  editorCopy: string;
+  editorPaste: string;
 }
