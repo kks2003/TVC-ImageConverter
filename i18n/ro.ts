@@ -215,7 +215,11 @@ const ro: Translation = {
     "Cyan", "Galben", "Alb"
   ],
   ttDelete: "Șterge",
-  pasteHint: "…sau lipește din clipboard (Ctrl+V)"
+  pasteHint: "…sau lipește din clipboard (Ctrl+V)",
+  ttCompare: "Comparație înainte / după: imaginea originală și rezultatul TVC cu un separator glisant",
+  compareBefore: "Original",
+  compareAfter: "TVC",
+  compareDivider: "Separator (trage sau folosește tastele ← →)"
 };
 
 export default ro;

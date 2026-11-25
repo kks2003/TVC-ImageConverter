@@ -215,7 +215,11 @@ const pl: Translation = {
   ttDownloadBmp11: "Zapisz obraz jako BMP o proporcjach 1:1 (128x240)",
   ttDownloadBmp21: "Zapisz obraz jako BMP o proporcjach 2:1 (256x240)",
   ttDelete: "Usuń",
-  pasteHint: "…lub wklej ze schowka (Ctrl+V)"
+  pasteHint: "…lub wklej ze schowka (Ctrl+V)",
+  ttCompare: "Porównanie przed / po: oryginalny obraz i wynik TVC z przesuwanym separatorem",
+  compareBefore: "Oryginał",
+  compareAfter: "TVC",
+  compareDivider: "Separator (przeciągnij lub użyj klawiszy ← →)"
 };
 
 export default pl;

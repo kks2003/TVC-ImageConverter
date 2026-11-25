@@ -214,7 +214,11 @@ const en: Translation = {
     "Dark Cyan", "Dark Yellow", "Grey", "Green", 
     "Cyan", "Yellow", "White"
   ],
-  pasteHint: "…or paste from the clipboard (Ctrl+V)"
+  pasteHint: "…or paste from the clipboard (Ctrl+V)",
+  ttCompare: "Before / after comparison: the original image and the TVC result with a draggable divider",
+  compareBefore: "Original",
+  compareAfter: "TVC",
+  compareDivider: "Divider (drag, or use the ← → keys)"
 };
 
 export default en;

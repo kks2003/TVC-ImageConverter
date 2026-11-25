@@ -215,7 +215,11 @@ const sk: Translation = {
   ttSaveOriginalSizeBtn: "Uložiť celý obrázok v pôvodnom rozlíšení s paletou TVC.",
   ttSaveCompositionBtn: "Uložiť aktuálny výrez (zoom/posun) v pevnom rozlíšení TVC.",
   ttDelete: "Odstrániť",
-  pasteHint: "…alebo vlož zo schránky (Ctrl+V)"
+  pasteHint: "…alebo vlož zo schránky (Ctrl+V)",
+  ttCompare: "Porovnanie pred / po: pôvodný obrázok a výsledok TVC s posuvným oddeľovačom",
+  compareBefore: "Originál",
+  compareAfter: "TVC",
+  compareDivider: "Oddeľovač (potiahni alebo použi klávesy ← →)"
 };
 
 export default sk;

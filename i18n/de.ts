@@ -215,7 +215,11 @@ const de: Translation = {
     "Cyan", "Gelb", "Weiß"
   ],
   ttDelete: "Löschen",
-  pasteHint: "…oder aus der Zwischenablage einfügen (Strg+V)"
+  pasteHint: "…oder aus der Zwischenablage einfügen (Strg+V)",
+  ttCompare: "Vorher/Nachher-Vergleich: Originalbild und TVC-Ergebnis mit verschiebbarem Trenner",
+  compareBefore: "Original",
+  compareAfter: "TVC",
+  compareDivider: "Trenner (ziehen oder ← → Tasten verwenden)"
 };
 
 export default de;

@@ -215,7 +215,11 @@ const ru: Translation = {
     "Голубой", "Желтый", "Белый"
   ],
   ttDelete: "Удалить",
-  pasteHint: "…или вставьте из буфера обмена (Ctrl+V)"
+  pasteHint: "…или вставьте из буфера обмена (Ctrl+V)",
+  ttCompare: "Сравнение до / после: исходное изображение и результат TVC с перетаскиваемым разделителем",
+  compareBefore: "Оригинал",
+  compareAfter: "TVC",
+  compareDivider: "Разделитель (перетащите или используйте клавиши ← →)"
 };
 
 export default ru;

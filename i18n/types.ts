@@ -214,4 +214,8 @@ export interface Translation {
   maskActiveBadge?: string;
   colorNames?: string[];
   pasteHint: string;
+  ttCompare: string;
+  compareBefore: string;
+  compareAfter: string;
+  compareDivider: string;
 }

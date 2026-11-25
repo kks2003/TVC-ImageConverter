@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Download, Layers, Image as ImageIcon, Monitor, Sun, Contrast, Zap, Palette as PaletteIcon, Move, RotateCcw, ArrowLeftRight, Maximize, X, Eye, EyeOff, Wand2, Expand, Info, Sparkles, Filter, Copy, Crop, Pencil } from 'lucide-react';
+import { Upload, Download, Layers, Image as ImageIcon, Monitor, Sun, Contrast, Zap, Palette as PaletteIcon, Move, RotateCcw, ArrowLeftRight, Maximize, X, Eye, EyeOff, Wand2, Expand, Info, Sparkles, Filter, Copy, Crop, Pencil, Columns2 } from 'lucide-react';
 import Button from './components/Button';
 import ControlGroup from './components/ControlGroup';
 import Slider from './components/Slider';
@@ -8,6 +8,7 @@ import ManualModal from './components/ManualModal';
 import AppFooter from './components/AppFooter';
 import AppHeader from './components/AppHeader';
 import AutoTuneModal from './components/AutoTuneModal';
+import CompareOverlay from './components/CompareOverlay';
 import { ProcessingState, ProcessingSettings, PixelData, DitherMethod, ImageAdjustments } from './types';
 import { processImage, trimSolidBorder, generateTransparencyMask, createMaskedPreviewUrl, pairKey } from './services/imageProcessor';
 import { encodeBMP, encodeBMP4bpp, encodeEditorBin, TVCEditorMode, DEFAULT_ACTIVE_COLORS } from './services/bmpEncoder';
@@ -19,6 +20,7 @@ import { FIXED_PALETTE } from './services/palette';
 import { downloadBlob } from './utils/download';
 import { TVC_MODES, ERROR_DIFFUSION_METHODS, DEFAULT_ADJUSTMENTS } from './services/constants';
 import { useCompositionDrag } from './hooks/useCompositionDrag';
+import { renderCompositionPreview } from './services/composition';
 import { useClipboardImagePaste } from './hooks/useClipboardImagePaste';
 import { translations, Language } from './i18n';
 
@@ -135,6 +137,9 @@ const App: React.FC = () => {
   const [transparencyMask, setTransparencyMask] = useState<Uint8Array | null>(null);
   const [maskVisible, setMaskVisible] = useState<boolean>(true);
   const [maskedPreviewUrl, setMaskedPreviewUrl] = useState<string | null>(null);
+  const [compareMode, setCompareMode] = useState(false);
+  const [comparePosition, setComparePosition] = useState(50);
+  const [compareBeforeUrl, setCompareBeforeUrl] = useState<string | null>(null);
 
   const handleGenerateMask = () => {
     if (!pixelData) return;
@@ -902,6 +907,21 @@ const App: React.FC = () => {
   const isTVC4 = settings.outputMode === TVC_MODES.MODE_4;
   const isTVC2 = settings.outputMode === TVC_MODES.MODE_2;
   const isOriginalMode = settings.resolutionMode === 'original';
+
+  // Source image framed like the conversion, for the before/after wipe.
+  const compareAvailable = !isOriginalMode && !!pixelData && !!sourceImage;
+  useEffect(() => {
+    if (!compareMode || !compareAvailable || !sourceImage) { setCompareBeforeUrl(null); return; }
+    let cancelled = false;
+    let url: string | null = null;
+    renderCompositionPreview(sourceImage, settings).then((u) => {
+      url = u;
+      if (cancelled) { if (u) URL.revokeObjectURL(u); return; }
+      setCompareBeforeUrl(u);
+    });
+    return () => { cancelled = true; if (url) URL.revokeObjectURL(url); };
+  }, [compareMode, compareAvailable, sourceImage, settings.fitMode, settings.zoom, settings.positionX, settings.positionY,
+      settings.backgroundColor, settings.outputMode, settings.resolutionMode]);
   const isTVC256k = settings.resolutionMode === 'tvc256k';
   const isAnyTVC = isTVC16 || isTVC4 || isTVC2;
   const isStretch = settings.fitMode === 'stretch';
@@ -1475,6 +1495,16 @@ const App: React.FC = () => {
                             {maskVisible ? <Sparkles size={20} className="text-pink-200" /> : <EyeOff size={20} />}
                           </button>
                         )}
+                        {compareAvailable && (
+                          <button
+                            onClick={() => setCompareMode((v) => !v)}
+                            className={`p-2 rounded-full transition-colors shadow-lg backdrop-blur-sm ${compareMode ? 'bg-blue-600 hover:bg-blue-500 text-white ring-2 ring-blue-400' : 'bg-slate-800/80 hover:bg-slate-700 text-slate-200'}`}
+                            title={t.ttCompare}
+                            aria-pressed={compareMode}
+                          >
+                            <Columns2 size={20} />
+                          </button>
+                        )}
                         <button 
                           onClick={() => setShowTheaterMode(true)}
                           className="bg-slate-800/80 hover:bg-slate-700 p-2 rounded-full text-slate-200 transition-colors shadow-lg backdrop-blur-sm"
@@ -1496,24 +1526,51 @@ const App: React.FC = () => {
                         className={`w-full h-full relative ${isDragging ? 'cursor-grabbing' : 'cursor-move'} flex items-center justify-center`}
                         style={{ backgroundColor: settings.backgroundColor }}
                       >
-                        <img 
-                          src={currentDisplayUrl} 
-                          alt="Pixelated" 
-                          className={`pixelated transition-transform duration-300 scale-100 pointer-events-none select-none`}
-                          style={{
-                              maxWidth: isOriginalMode ? 'none' : '100%',
-                              maxHeight: isOriginalMode ? 'none' : '100%',
-                              // Visual Aspect Ratio logic:
-                              // width is raw pixels * 2. 
-                              width: isOriginalMode ? `${pixelData.width * 2}px` : (visualAspect > 1 ? '100%' : 'auto'),
-                              height: isOriginalMode ? `${pixelData.height}px` : (visualAspect <= 1 ? '100%' : 'auto'),
-                              aspectRatio: `${visualAspect}`,
-                              transform: isOriginalMode 
-                                ? `translate(${viewTransform.x}px, ${viewTransform.y}px) scale(${viewTransform.scale})` 
-                                : 'none',
-                              transformOrigin: 'center center'
-                          }}
-                        />
+                        {compareMode && compareBeforeUrl && !isOriginalMode ? (
+                          <div
+                            className="relative"
+                            style={{
+                              width: visualAspect > 1 ? '100%' : 'auto',
+                              height: visualAspect <= 1 ? '100%' : 'auto',
+                              maxWidth: '100%',
+                              maxHeight: '100%',
+                              aspectRatio: `${visualAspect}`
+                            }}
+                          >
+                            <img
+                              src={currentDisplayUrl}
+                              alt="Pixelated"
+                              className="pixelated w-full h-full pointer-events-none select-none"
+                            />
+                            <CompareOverlay
+                              beforeUrl={compareBeforeUrl}
+                              position={comparePosition}
+                              onPositionChange={setComparePosition}
+                              beforeLabel={t.compareBefore}
+                              afterLabel={t.compareAfter}
+                              sliderTitle={t.compareDivider}
+                            />
+                          </div>
+                        ) : (
+                          <img 
+                            src={currentDisplayUrl} 
+                            alt="Pixelated" 
+                            className={`pixelated transition-transform duration-300 scale-100 pointer-events-none select-none`}
+                            style={{
+                                maxWidth: isOriginalMode ? 'none' : '100%',
+                                maxHeight: isOriginalMode ? 'none' : '100%',
+                                // Visual Aspect Ratio logic:
+                                // width is raw pixels * 2. 
+                                width: isOriginalMode ? `${pixelData.width * 2}px` : (visualAspect > 1 ? '100%' : 'auto'),
+                                height: isOriginalMode ? `${pixelData.height}px` : (visualAspect <= 1 ? '100%' : 'auto'),
+                                aspectRatio: `${visualAspect}`,
+                                transform: isOriginalMode 
+                                  ? `translate(${viewTransform.x}px, ${viewTransform.y}px) scale(${viewTransform.scale})` 
+                                  : 'none',
+                                transformOrigin: 'center center'
+                            }}
+                          />
+                        )}
                       </div>
                     )}
                     {!pixelData && <div className="text-slate-600 mono">{t.noData}</div>}

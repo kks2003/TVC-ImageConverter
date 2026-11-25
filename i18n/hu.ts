@@ -216,7 +216,11 @@ const hu: Translation = {
     "Sötétcián", "Sötétsárga", "Szürke", "Zöld", 
     "Cián", "Sárga", "Fehér"
   ],
-  pasteHint: "…vagy illeszd be a vágólapról (Ctrl+V)"
+  pasteHint: "…vagy illeszd be a vágólapról (Ctrl+V)",
+  ttCompare: "Előtte / utána összehasonlítás: az eredeti kép és a TVC-s eredmény egy húzható elválasztóval",
+  compareBefore: "Eredeti",
+  compareAfter: "TVC",
+  compareDivider: "Elválasztó (húzd, vagy használd a ← → nyilakat)"
 };
 
 export default hu;

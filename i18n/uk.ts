@@ -215,7 +215,11 @@ const uk: Translation = {
     "Блакитний", "Жовтий", "Білий"
   ],
   ttDelete: "Видалити",
-  pasteHint: "…або вставте з буфера обміну (Ctrl+V)"
+  pasteHint: "…або вставте з буфера обміну (Ctrl+V)",
+  ttCompare: "Порівняння до / після: оригінальне зображення та результат TVC з перетягуваним роздільником",
+  compareBefore: "Оригінал",
+  compareAfter: "TVC",
+  compareDivider: "Роздільник (перетягніть або використовуйте клавіші ← →)"
 };
 
 export default uk;
