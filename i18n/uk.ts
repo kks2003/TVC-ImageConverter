@@ -223,7 +223,10 @@ const uk: Translation = {
   hue: "Відтінок",
   temperature: "Колірна температура",
   ttUndo: "Скасувати зміну налаштувань (Ctrl+Z)",
-  ttRedo: "Повторити зміну налаштувань (Ctrl+Y або Ctrl+Shift+Z)"
+  ttRedo: "Повторити зміну налаштувань (Ctrl+Y або Ctrl+Shift+Z)",
+  ditherGridTitle: "Порівняння методів дизерингу",
+  ditherGridHint: "Те саме зображення всіма методами, інші налаштування без змін. Натисніть на той, що подобається.",
+  ttDitherGrid: "Спробувати всі методи дизерингу поруч"
 };
 
 export default uk;

@@ -222,7 +222,10 @@ const en: Translation = {
   hue: "Hue",
   temperature: "Temperature",
   ttUndo: "Undo settings change (Ctrl+Z)",
-  ttRedo: "Redo settings change (Ctrl+Y or Ctrl+Shift+Z)"
+  ttRedo: "Redo settings change (Ctrl+Y or Ctrl+Shift+Z)",
+  ditherGridTitle: "Compare dither methods",
+  ditherGridHint: "The same image with every method, all other settings unchanged. Click the one you like.",
+  ttDitherGrid: "Try every dither method side by side"
 };
 
 export default en;

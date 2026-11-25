@@ -223,7 +223,10 @@ const es: Translation = {
   hue: "Tono",
   temperature: "Temperatura de color",
   ttUndo: "Deshacer cambio de ajustes (Ctrl+Z)",
-  ttRedo: "Rehacer cambio de ajustes (Ctrl+Y o Ctrl+Mayús+Z)"
+  ttRedo: "Rehacer cambio de ajustes (Ctrl+Y o Ctrl+Mayús+Z)",
+  ditherGridTitle: "Comparar métodos de tramado",
+  ditherGridHint: "La misma imagen con cada método, el resto de ajustes sin cambios. Haz clic en el que te guste.",
+  ttDitherGrid: "Probar todos los métodos de tramado uno al lado del otro"
 };
 
 export default es;

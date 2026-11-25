@@ -223,7 +223,10 @@ const pl: Translation = {
   hue: "Odcień",
   temperature: "Temperatura barwowa",
   ttUndo: "Cofnij zmianę ustawień (Ctrl+Z)",
-  ttRedo: "Ponów zmianę ustawień (Ctrl+Y lub Ctrl+Shift+Z)"
+  ttRedo: "Ponów zmianę ustawień (Ctrl+Y lub Ctrl+Shift+Z)",
+  ditherGridTitle: "Porównanie metod ditheringu",
+  ditherGridHint: "Ten sam obraz każdą metodą, pozostałe ustawienia bez zmian. Kliknij ten, który ci się podoba.",
+  ttDitherGrid: "Wypróbuj wszystkie metody ditheringu obok siebie"
 };
 
 export default pl;

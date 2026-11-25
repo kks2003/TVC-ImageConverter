@@ -223,7 +223,10 @@ const sk: Translation = {
   hue: "Odtieň",
   temperature: "Farebná teplota",
   ttUndo: "Vrátiť zmenu nastavení (Ctrl+Z)",
-  ttRedo: "Znova použiť zmenu nastavení (Ctrl+Y alebo Ctrl+Shift+Z)"
+  ttRedo: "Znova použiť zmenu nastavení (Ctrl+Y alebo Ctrl+Shift+Z)",
+  ditherGridTitle: "Porovnanie metód ditheringu",
+  ditherGridHint: "Ten istý obrázok každou metódou, ostatné nastavenia nezmenené. Klikni na ten, ktorý sa ti páči.",
+  ttDitherGrid: "Vyskúšať všetky metódy ditheringu vedľa seba"
 };
 
 export default sk;

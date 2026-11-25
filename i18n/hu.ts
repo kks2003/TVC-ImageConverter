@@ -224,7 +224,10 @@ const hu: Translation = {
   hue: "Színárnyalat",
   temperature: "Színhőmérséklet",
   ttUndo: "Beállítás visszavonása (Ctrl+Z)",
-  ttRedo: "Beállítás újra (Ctrl+Y vagy Ctrl+Shift+Z)"
+  ttRedo: "Beállítás újra (Ctrl+Y vagy Ctrl+Shift+Z)",
+  ditherGridTitle: "Dither módszerek összehasonlítása",
+  ditherGridHint: "Ugyanaz a kép minden módszerrel, a többi beállítás változatlan. Kattints arra, amelyik tetszik.",
+  ttDitherGrid: "Összes dither módszer kipróbálása egymás mellett"
 };
 
 export default hu;

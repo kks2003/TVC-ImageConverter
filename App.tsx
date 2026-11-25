@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Download, Layers, Image as ImageIcon, Monitor, Sun, Contrast, Zap, Palette as PaletteIcon, Move, RotateCcw, ArrowLeftRight, Maximize, X, Eye, EyeOff, Wand2, Expand, Info, Sparkles, Filter, Copy, Crop, Pencil, Columns2, Rainbow, Thermometer, Undo2, Redo2 } from 'lucide-react';
+import { Upload, Download, Layers, Image as ImageIcon, Monitor, Sun, Contrast, Zap, Palette as PaletteIcon, Move, RotateCcw, ArrowLeftRight, Maximize, X, Eye, EyeOff, Wand2, Expand, Info, Sparkles, Filter, Copy, Crop, Pencil, Columns2, Rainbow, Thermometer, Undo2, Redo2, LayoutGrid } from 'lucide-react';
 import Button from './components/Button';
 import ControlGroup from './components/ControlGroup';
 import Slider from './components/Slider';
@@ -10,6 +10,7 @@ import AppHeader from './components/AppHeader';
 import AutoTuneModal from './components/AutoTuneModal';
 import CompareOverlay from './components/CompareOverlay';
 import TemperatureFilter from './components/TemperatureFilter';
+import DitherGrid from './components/DitherGrid';
 import { ProcessingState, ProcessingSettings, PixelData, DitherMethod, ImageAdjustments } from './types';
 import { processImage, trimSolidBorder, generateTransparencyMask, createMaskedPreviewUrl, pairKey } from './services/imageProcessor';
 import { encodeBMP, encodeBMP4bpp, encodeEditorBin, TVCEditorMode, DEFAULT_ACTIVE_COLORS } from './services/bmpEncoder';
@@ -22,6 +23,8 @@ import { downloadBlob } from './utils/download';
 import { TVC_MODES, ERROR_DIFFUSION_METHODS, DEFAULT_ADJUSTMENTS } from './services/constants';
 import { useCompositionDrag } from './hooks/useCompositionDrag';
 import { renderCompositionPreview } from './services/composition';
+import { convertImage } from './services/convert';
+import { ditherOptionGroups } from './services/ditherOptions';
 import { useClipboardImagePaste } from './hooks/useClipboardImagePaste';
 import { useUndoHistory } from './hooks/useUndoHistory';
 import { useUndoRedoKeys } from './hooks/useUndoRedoKeys';
@@ -141,6 +144,7 @@ const App: React.FC = () => {
   const [maskVisible, setMaskVisible] = useState<boolean>(true);
   const [maskedPreviewUrl, setMaskedPreviewUrl] = useState<string | null>(null);
   const [compareMode, setCompareMode] = useState(false);
+  const [showDitherGrid, setShowDitherGrid] = useState(false);
   const [comparePosition, setComparePosition] = useState(50);
   const [compareBeforeUrl, setCompareBeforeUrl] = useState<string | null>(null);
 
@@ -177,80 +181,18 @@ const App: React.FC = () => {
     setError(null);
 
     try {
-      // In Original Mode with saveOriginalSize=false, use 'tvc' resolution mode for composition
-      const isSavingComposition = currentSettings.resolutionMode === 'original' && !currentSettings.saveOriginalSize;
-      const effectiveResolutionMode = isSavingComposition ? 'tvc' : currentSettings.resolutionMode;
-      const effectiveFitMode = (currentSettings.resolutionMode === 'original' && currentSettings.saveOriginalSize) ? 'stretch' : currentSettings.fitMode;
-
-      let paletteToUse = currentSettings.selectedColors 
-        ? currentSettings.selectedColors.map(i => FIXED_PALETTE[i])
-        : FIXED_PALETTE;
-
-      let selectedColorsToUse = currentSettings.selectedColors;
-
-      const result = await processImage(
-        img, 
-        paletteToUse, 
-        effectiveFitMode, 
-        currentSettings.ditherMethod,
-        currentSettings.adjustments,
-        currentSettings.positionX,
-        currentSettings.positionY,
-        currentSettings.zoom,
-        currentSettings.backgroundColor,
-        currentSettings.outputMode,
-        effectiveResolutionMode,
-        currentSettings.invertColors,
-        undefined,
-        currentSettings.serpentine,
-        currentSettings.perceptualWeighting,
-        currentSettings.pixelArtCleaning,
-        currentSettings.autoColorSelection,
-        currentSettings.disabledPatternPairs ?? [],
-        currentSettings.resizeQuality ?? 'sharp',
-        currentSettings.preciseAutoColor ?? false,
-        currentSettings.patternMixMode ?? 'checker'
-      );
-
-      // Map indices back to the full 15-color palette if a subset was used
-      let finalIndices = result.indices;
-      if (selectedColorsToUse) {
-        finalIndices = new Uint8Array(result.indices.length);
-        for (let i = 0; i < result.indices.length; i++) {
-          finalIndices[i] = selectedColorsToUse[result.indices[i]];
-        }
-      }
-
-      // Width/Height here are "raw" pixel dimensions
-      let rawWidth = Math.ceil(img.width / (currentSettings.outputMode === 'tvc-16' ? 2 : 1));
-      let rawHeight = img.height;
-      
-      if (effectiveResolutionMode === 'tvc256k') {
-        rawWidth = 256;
-        rawHeight = 240;
-      } else if (effectiveResolutionMode === 'tvc') {
-        if (currentSettings.outputMode === 'tvc-16') {
-          rawWidth = 128;
-          rawHeight = 240;
-        } else if (currentSettings.outputMode === 'tvc-4') {
-          rawWidth = 256;
-          rawHeight = 240;
-        } else if (currentSettings.outputMode === 'tvc-2') {
-          rawWidth = 512;
-          rawHeight = 240;
-        }
-      }
+      const conv = await convertImage(img, currentSettings);
 
       setTransparencyMask(null);
       setMaskedPreviewUrl(null);
       setPixelData({
         originalUrl: img.src,
-        processedUrl: result.url,
-        indices: finalIndices,
-        rgba: result.rgba,
+        processedUrl: conv.url,
+        indices: conv.indices,
+        rgba: conv.rgba,
         palette: FIXED_PALETTE,
-        width: rawWidth,
-        height: rawHeight
+        width: conv.rawWidth,
+        height: conv.rawHeight
       });
       setState(ProcessingState.COMPLETED);
     } catch (err: any) {
@@ -1185,39 +1127,33 @@ const App: React.FC = () => {
 
                   {renderColorSelectors()}
 
-                  <ControlGroup title={t.ditherMethod} icon={<Zap size={14} className="text-yellow-500" />} className="space-y-3" contentClassName="space-y-2">
+                  <ControlGroup
+                    title={t.ditherMethod}
+                    icon={<Zap size={14} className="text-yellow-500" />}
+                    className="space-y-3"
+                    contentClassName="space-y-2"
+                    extra={sourceImage && (
+                      <button
+                        onClick={() => setShowDitherGrid(true)}
+                        className="text-[10px] text-slate-400 hover:text-blue-400 flex items-center gap-1 mono uppercase"
+                        title={t.ttDitherGrid}
+                      >
+                        <LayoutGrid size={12} />
+                      </button>
+                    )}
+                  >
                     <div className="grid grid-cols-1 gap-2">
                       <select 
                         value={settings.ditherMethod}
                         onChange={(e) => handleSettingChange({ ditherMethod: e.target.value as DitherMethod })}
                         className="bg-slate-800 border border-slate-700 text-slate-200 rounded-lg p-2 text-sm focus:outline-none focus:border-blue-500 mono"
                       >
-                      <option value="pattern-tvc">{t.patternTVC}</option>
-                      <option value="pattern-tvc-diffusion">{t.patternTVCDiffusion}</option>
-                      <optgroup label={t.catModernist} className="bg-slate-900 text-slate-400">
-                        <option value="blue-noise">{t.blueNoise}</option>
-                        <option value="blue-noise-16x16">{t.blueNoise16 || 'Blue Noise 16x16'}</option>
-                        <option value="blue-noise-16x16-aniso">{t.blueNoise16Aniso || 'Blue Noise 16x16 (2:1 optimized)'}</option>
-                        <option value="yliluoma">Yliluoma</option>
-                      </optgroup>
-                      <optgroup label={t.catOrdered} className="bg-slate-900 text-slate-400">
-                        <option value="cluster-dot-8x8">{t.clusterDot}</option>
-                        <option value="bayer-16x16">{t.bayer16}</option>
-                        <option value="ordered-8x8">{t.ordered8}</option>
-                        <option value="ordered-4x4">{t.ordered4}</option>
-                        <option value="ordered-2x2">{t.ordered2}</option>
-                        <option value="threshold">{t.threshold}</option>
-                        <option value="none">{t.none}</option>
-                      </optgroup>
-                      <optgroup label={t.catDiffusion} className="bg-slate-900 text-slate-400">
-                        <option value="floyd-steinberg">Floyd-Steinberg</option>
-                        <option value="atkinson">Atkinson</option>
-                        <option value="sierra-lite">{t.sierraLite}</option>
-                        <option value="stucki">{t.stucki}</option>
-                        <option value="burkes">{t.burkes}</option>
-                        <option value="jarvis">{t.jarvis}</option>
-                        <option value="ostromoukhov">{t.ostromoukhov || 'Ostromoukhov'}</option>
-                      </optgroup>
+                      {ditherOptionGroups(t).map((group, gi) => {
+                        const options = group.items.map((o) => <option key={o.value} value={o.value}>{o.label}</option>);
+                        return group.label === null
+                          ? <React.Fragment key={gi}>{options}</React.Fragment>
+                          : <optgroup key={gi} label={group.label} className="bg-slate-900 text-slate-400">{options}</optgroup>;
+                      })}
                     </select>
                   </div>
                 </ControlGroup>
@@ -2047,6 +1983,16 @@ const App: React.FC = () => {
 
       <AppFooter t={t} />
 
+      {showDitherGrid && sourceImage && (
+        <DitherGrid
+          t={t}
+          img={sourceImage}
+          settings={settings}
+          aspect={isOriginalMode ? 1 : visualAspect}
+          onPick={(m) => handleSettingChange({ ditherMethod: m })}
+          onClose={() => setShowDitherGrid(false)}
+        />
+      )}
       {isAutoTuning && <AutoTuneModal t={t} progress={autoTuneProgress} onCancel={cancelAutoTune} />}
     </div>
   );

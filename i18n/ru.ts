@@ -223,7 +223,10 @@ const ru: Translation = {
   hue: "Оттенок",
   temperature: "Цветовая температура",
   ttUndo: "Отменить изменение настроек (Ctrl+Z)",
-  ttRedo: "Повторить изменение настроек (Ctrl+Y или Ctrl+Shift+Z)"
+  ttRedo: "Повторить изменение настроек (Ctrl+Y или Ctrl+Shift+Z)",
+  ditherGridTitle: "Сравнение методов дизеринга",
+  ditherGridHint: "Одно и то же изображение всеми методами, остальные настройки без изменений. Нажмите на понравившийся.",
+  ttDitherGrid: "Попробовать все методы дизеринга рядом"
 };
 
 export default ru;

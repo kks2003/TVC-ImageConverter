@@ -222,4 +222,7 @@ export interface Translation {
   temperature: string;
   ttUndo: string;
   ttRedo: string;
+  ditherGridTitle: string;
+  ditherGridHint: string;
+  ttDitherGrid: string;
 }

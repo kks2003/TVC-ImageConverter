@@ -223,7 +223,10 @@ const ro: Translation = {
   hue: "Nuanță",
   temperature: "Temperatura culorii",
   ttUndo: "Anulează modificarea setărilor (Ctrl+Z)",
-  ttRedo: "Refă modificarea setărilor (Ctrl+Y sau Ctrl+Shift+Z)"
+  ttRedo: "Refă modificarea setărilor (Ctrl+Y sau Ctrl+Shift+Z)",
+  ditherGridTitle: "Compară metodele de dithering",
+  ditherGridHint: "Aceeași imagine cu fiecare metodă, celelalte setări neschimbate. Fă clic pe cea care îți place.",
+  ttDitherGrid: "Încearcă toate metodele de dithering una lângă alta"
 };
 
 export default ro;

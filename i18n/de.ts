@@ -223,7 +223,10 @@ const de: Translation = {
   hue: "Farbton",
   temperature: "Farbtemperatur",
   ttUndo: "Einstellungsänderung rückgängig (Strg+Z)",
-  ttRedo: "Einstellungsänderung wiederholen (Strg+Y oder Strg+Umschalt+Z)"
+  ttRedo: "Einstellungsänderung wiederholen (Strg+Y oder Strg+Umschalt+Z)",
+  ditherGridTitle: "Dither-Verfahren vergleichen",
+  ditherGridHint: "Dasselbe Bild mit jedem Verfahren, alle anderen Einstellungen unverändert. Klicke auf das, das dir gefällt.",
+  ttDitherGrid: "Alle Dither-Verfahren nebeneinander ausprobieren"
 };
 
 export default de;
