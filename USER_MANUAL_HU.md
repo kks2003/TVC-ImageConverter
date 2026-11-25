@@ -1,4 +1,4 @@
-# Videoton TV Computer (TVC) Képkészítő - Teljes Felhasználói Kézikönyv (v4.3)
+# Videoton TV Computer (TVC) Képkészítő - Teljes Felhasználói Kézikönyv (v4.4)
 
 ## Bevezetés
 A Videoton TV Computer (TVC) Képkészítő egy professzionális eszköz, amelyet modern digitális képek klasszikus 8 bites magyar Videoton TV Computer (TVC) natív grafikus formátumába való átalakítására terveztek. Az eszköz pontosan szimulálja a TVC hardveres korlátait, beleértve az egyedi 16 színű palettát (megjegyzés: mivel 2 fekete van, ez gyakorlatilag 15 színt jelent) és az anamorfikus pixeleket.
