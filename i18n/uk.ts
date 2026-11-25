@@ -219,7 +219,9 @@ const uk: Translation = {
   ttCompare: "Порівняння до / після: оригінальне зображення та результат TVC з перетягуваним роздільником",
   compareBefore: "Оригінал",
   compareAfter: "TVC",
-  compareDivider: "Роздільник (перетягніть або використовуйте клавіші ← →)"
+  compareDivider: "Роздільник (перетягніть або використовуйте клавіші ← →)",
+  hue: "Відтінок",
+  temperature: "Колірна температура"
 };
 
 export default uk;

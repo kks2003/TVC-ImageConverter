@@ -219,7 +219,9 @@ const ro: Translation = {
   ttCompare: "Comparație înainte / după: imaginea originală și rezultatul TVC cu un separator glisant",
   compareBefore: "Original",
   compareAfter: "TVC",
-  compareDivider: "Separator (trage sau folosește tastele ← →)"
+  compareDivider: "Separator (trage sau folosește tastele ← →)",
+  hue: "Nuanță",
+  temperature: "Temperatura culorii"
 };
 
 export default ro;

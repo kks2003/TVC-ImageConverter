@@ -219,7 +219,9 @@ const es: Translation = {
   ttCompare: "Comparación antes / después: la imagen original y el resultado TVC con un divisor arrastrable",
   compareBefore: "Original",
   compareAfter: "TVC",
-  compareDivider: "Divisor (arrastra o usa las teclas ← →)"
+  compareDivider: "Divisor (arrastra o usa las teclas ← →)",
+  hue: "Tono",
+  temperature: "Temperatura de color"
 };
 
 export default es;

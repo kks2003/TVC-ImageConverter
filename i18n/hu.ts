@@ -220,7 +220,9 @@ const hu: Translation = {
   ttCompare: "Előtte / utána összehasonlítás: az eredeti kép és a TVC-s eredmény egy húzható elválasztóval",
   compareBefore: "Eredeti",
   compareAfter: "TVC",
-  compareDivider: "Elválasztó (húzd, vagy használd a ← → nyilakat)"
+  compareDivider: "Elválasztó (húzd, vagy használd a ← → nyilakat)",
+  hue: "Színárnyalat",
+  temperature: "Színhőmérséklet"
 };
 
 export default hu;

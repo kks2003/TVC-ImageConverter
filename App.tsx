@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Download, Layers, Image as ImageIcon, Monitor, Sun, Contrast, Zap, Palette as PaletteIcon, Move, RotateCcw, ArrowLeftRight, Maximize, X, Eye, EyeOff, Wand2, Expand, Info, Sparkles, Filter, Copy, Crop, Pencil, Columns2 } from 'lucide-react';
+import { Upload, Download, Layers, Image as ImageIcon, Monitor, Sun, Contrast, Zap, Palette as PaletteIcon, Move, RotateCcw, ArrowLeftRight, Maximize, X, Eye, EyeOff, Wand2, Expand, Info, Sparkles, Filter, Copy, Crop, Pencil, Columns2, Rainbow, Thermometer } from 'lucide-react';
 import Button from './components/Button';
 import ControlGroup from './components/ControlGroup';
 import Slider from './components/Slider';
@@ -9,6 +9,7 @@ import AppFooter from './components/AppFooter';
 import AppHeader from './components/AppHeader';
 import AutoTuneModal from './components/AutoTuneModal';
 import CompareOverlay from './components/CompareOverlay';
+import TemperatureFilter from './components/TemperatureFilter';
 import { ProcessingState, ProcessingSettings, PixelData, DitherMethod, ImageAdjustments } from './types';
 import { processImage, trimSolidBorder, generateTransparencyMask, createMaskedPreviewUrl, pairKey } from './services/imageProcessor';
 import { encodeBMP, encodeBMP4bpp, encodeEditorBin, TVCEditorMode, DEFAULT_ACTIVE_COLORS } from './services/bmpEncoder';
@@ -1278,6 +1279,19 @@ const App: React.FC = () => {
                     onChange={(v) => handleAdjustmentChange({ saturation: v })}
                     titles={sliderTitles}
                   />
+                  <Slider
+                    label={t.hue} icon={<Rainbow size={12}/>}
+                    value={settings.adjustments.hue ?? 0} min={-180} max={180} step={1}
+                    onChange={(v) => handleAdjustmentChange({ hue: v })}
+                    titles={sliderTitles}
+                    suffix="°"
+                  />
+                  <Slider
+                    label={t.temperature} icon={<Thermometer size={12}/>}
+                    value={settings.adjustments.temperature ?? 0} min={-100} max={100} step={1}
+                    onChange={(v) => handleAdjustmentChange({ temperature: v })}
+                    titles={sliderTitles}
+                  />
                   <Slider 
                     label={t.gamma} icon={<Zap size={12}/>} 
                     value={settings.adjustments.gamma} min={0.1} max={6.0} step={0.1}
@@ -1438,12 +1452,13 @@ const App: React.FC = () => {
                 <div className="space-y-4">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 font-mono block">{t.sourcePreview}</span>
                   <div className="w-full aspect-square bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl relative">
+                    {!!settings.adjustments.temperature && <TemperatureFilter temperature={settings.adjustments.temperature} />}
                     <img 
                       src={originalBase64} 
                       alt="Adjusted" 
                       className="w-full h-full object-contain"
                       style={{
-                        filter: `brightness(${1 + settings.adjustments.brightness/100}) contrast(${1 + settings.adjustments.contrast/100}) saturate(${settings.adjustments.saturation}%)`
+                        filter: `${settings.adjustments.temperature ? 'url(#tvc-temperature) ' : ''}${settings.adjustments.hue ? `hue-rotate(${settings.adjustments.hue}deg) ` : ''}brightness(${1 + settings.adjustments.brightness/100}) contrast(${1 + settings.adjustments.contrast/100}) saturate(${settings.adjustments.saturation}%)`
                       }}
                     />
                   </div>

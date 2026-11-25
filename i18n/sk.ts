@@ -219,7 +219,9 @@ const sk: Translation = {
   ttCompare: "Porovnanie pred / po: pôvodný obrázok a výsledok TVC s posuvným oddeľovačom",
   compareBefore: "Originál",
   compareAfter: "TVC",
-  compareDivider: "Oddeľovač (potiahni alebo použi klávesy ← →)"
+  compareDivider: "Oddeľovač (potiahni alebo použi klávesy ← →)",
+  hue: "Odtieň",
+  temperature: "Farebná teplota"
 };
 
 export default sk;

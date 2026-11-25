@@ -219,7 +219,9 @@ const pl: Translation = {
   ttCompare: "Porównanie przed / po: oryginalny obraz i wynik TVC z przesuwanym separatorem",
   compareBefore: "Oryginał",
   compareAfter: "TVC",
-  compareDivider: "Separator (przeciągnij lub użyj klawiszy ← →)"
+  compareDivider: "Separator (przeciągnij lub użyj klawiszy ← →)",
+  hue: "Odcień",
+  temperature: "Temperatura barwowa"
 };
 
 export default pl;

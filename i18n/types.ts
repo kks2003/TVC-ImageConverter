@@ -218,4 +218,6 @@ export interface Translation {
   compareBefore: string;
   compareAfter: string;
   compareDivider: string;
+  hue: string;
+  temperature: string;
 }

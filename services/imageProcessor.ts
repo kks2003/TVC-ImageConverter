@@ -289,7 +289,37 @@ const findNearestAllowedSolidColor = (
   return { color: palette[bestIndex], index: bestIndex };
 };
 
+// Colour-balance step run before the tonal adjustments (like a white balance):
+// temperature scales red up / blue down (warm) or the reverse (cool), hue
+// rotates colours with the same matrix as the CSS hue-rotate() filter, so the
+// source preview (which uses CSS filters) shows the same shift. A no-op when
+// both are 0, so existing settings produce byte-identical output.
+export const applyColorBalance = (data: Uint8ClampedArray, hueDeg: number, temperature: number) => {
+  if (!hueDeg && !temperature) return;
+  const t = Math.max(-100, Math.min(100, temperature)) / 100;
+  const kr = 1 + 0.25 * t, kg = 1 + 0.05 * t, kb = 1 - 0.25 * t;
+  const m = hueRotateMatrix(hueDeg);
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i] * kr, g = data[i + 1] * kg, b = data[i + 2] * kb;
+    data[i] = m[0] * r + m[1] * g + m[2] * b;
+    data[i + 1] = m[3] * r + m[4] * g + m[5] * b;
+    data[i + 2] = m[6] * r + m[7] * g + m[8] * b;
+  }
+};
+
+// W3C Filter Effects hue-rotate matrix (row-major 3x3).
+export const hueRotateMatrix = (deg: number): number[] => {
+  const a = (deg * Math.PI) / 180;
+  const c = Math.cos(a), s = Math.sin(a);
+  return [
+    0.213 + c * 0.787 - s * 0.213, 0.715 - c * 0.715 - s * 0.715, 0.072 - c * 0.072 + s * 0.928,
+    0.213 - c * 0.213 + s * 0.143, 0.715 + c * 0.285 + s * 0.140, 0.072 - c * 0.072 - s * 0.283,
+    0.213 - c * 0.213 - s * 0.787, 0.715 - c * 0.715 + s * 0.715, 0.072 + c * 0.928 + s * 0.072,
+  ];
+};
+
 const applyAdjustments = (data: Uint8ClampedArray, adj: ImageAdjustments) => {
+  applyColorBalance(data, adj.hue ?? 0, adj.temperature ?? 0);
   const brightness = adj.brightness / 100;
   const contrast = (adj.contrast + 100) / 100;
   const saturation = adj.saturation / 100;
