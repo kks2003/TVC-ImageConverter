@@ -235,7 +235,17 @@ const pl: Translation = {
   editorTextHint: "Kliknij na obraz, aby go umieścić (lewy: kolor główny, prawy: drugi kolor), przeciągnij na miejsce i naciśnij Enter.",
   editorStamp: "Odbij kopię tutaj i przesuwaj zaznaczenie dalej (S)",
   editorCopy: "Kopiuj zaznaczenie (Ctrl+C)",
-  editorPaste: "Wklej (Ctrl+V)"
+  editorPaste: "Wklej (Ctrl+V)",
+  editorEraser: "Gumka (przezroczystość na wyższych warstwach, kolor tła na warstwie bazowej)",
+  editorLayers: "Warstwy",
+  editorLayerBase: "Tło",
+  editorLayerName: "Warstwa",
+  editorAddLayer: "Nowa warstwa",
+  editorDeleteLayer: "Usuń warstwę",
+  editorMergeDown: "Scal z warstwą poniżej",
+  editorMoveLayerUp: "Przesuń warstwę w górę",
+  editorMoveLayerDown: "Przesuń warstwę w dół",
+  editorLayerVisibility: "Pokaż / ukryj (zapis obejmuje tylko widoczne warstwy)"
 };
 
 export default pl;

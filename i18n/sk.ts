@@ -235,7 +235,17 @@ const sk: Translation = {
   editorTextHint: "Klikni na obrázok na umiestnenie (ľavé: primárna, pravé: sekundárna farba), potiahni ho na miesto a stlač Enter.",
   editorStamp: "Odtlačiť kópiu sem a pokračovať v presúvaní výberu (S)",
   editorCopy: "Kopírovať výber (Ctrl+C)",
-  editorPaste: "Vložiť (Ctrl+V)"
+  editorPaste: "Vložiť (Ctrl+V)",
+  editorEraser: "Guma (priehľadnosť na vyšších vrstvách, farba pozadia na základnej vrstve)",
+  editorLayers: "Vrstvy",
+  editorLayerBase: "Pozadie",
+  editorLayerName: "Vrstva",
+  editorAddLayer: "Nová vrstva",
+  editorDeleteLayer: "Odstrániť vrstvu",
+  editorMergeDown: "Zlúčiť s vrstvou pod ňou",
+  editorMoveLayerUp: "Vrstvu vyššie",
+  editorMoveLayerDown: "Vrstvu nižšie",
+  editorLayerVisibility: "Zobraziť / skryť (uloženie obsahuje len viditeľné vrstvy)"
 };
 
 export default sk;

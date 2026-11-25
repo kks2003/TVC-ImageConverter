@@ -235,7 +235,17 @@ const ru: Translation = {
   editorTextHint: "Щёлкните по изображению, чтобы разместить (левая кнопка: основной цвет, правая: дополнительный), перетащите на место и нажмите Enter.",
   editorStamp: "Оставить копию здесь и двигать выделение дальше (S)",
   editorCopy: "Копировать выделение (Ctrl+C)",
-  editorPaste: "Вставить (Ctrl+V)"
+  editorPaste: "Вставить (Ctrl+V)",
+  editorEraser: "Ластик (прозрачность на верхних слоях, цвет фона на базовом слое)",
+  editorLayers: "Слои",
+  editorLayerBase: "Фон",
+  editorLayerName: "Слой",
+  editorAddLayer: "Новый слой",
+  editorDeleteLayer: "Удалить слой",
+  editorMergeDown: "Объединить с нижним слоем",
+  editorMoveLayerUp: "Слой выше",
+  editorMoveLayerDown: "Слой ниже",
+  editorLayerVisibility: "Показать / скрыть (сохраняются только видимые слои)"
 };
 
 export default ru;

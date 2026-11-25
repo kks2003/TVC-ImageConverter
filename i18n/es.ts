@@ -235,7 +235,17 @@ const es: Translation = {
   editorTextHint: "Haz clic en la imagen para colocarlo (izquierdo: color principal, derecho: secundario), arrástralo a su sitio y pulsa Intro.",
   editorStamp: "Estampar una copia aquí y seguir moviendo la selección (S)",
   editorCopy: "Copiar selección (Ctrl+C)",
-  editorPaste: "Pegar (Ctrl+V)"
+  editorPaste: "Pegar (Ctrl+V)",
+  editorEraser: "Borrador (transparente en capas superiores, color de fondo en la capa base)",
+  editorLayers: "Capas",
+  editorLayerBase: "Fondo",
+  editorLayerName: "Capa",
+  editorAddLayer: "Nueva capa",
+  editorDeleteLayer: "Eliminar capa",
+  editorMergeDown: "Combinar con la capa inferior",
+  editorMoveLayerUp: "Subir capa",
+  editorMoveLayerDown: "Bajar capa",
+  editorLayerVisibility: "Mostrar / ocultar (al guardar solo se incluyen las capas visibles)"
 };
 
 export default es;

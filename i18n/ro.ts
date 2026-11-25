@@ -235,7 +235,17 @@ const ro: Translation = {
   editorTextHint: "Fă clic pe imagine pentru a-l plasa (stânga: culoarea principală, dreapta: secundară), trage-l la locul lui și apasă Enter.",
   editorStamp: "Ștampilează o copie aici și continuă să muți selecția (S)",
   editorCopy: "Copiază selecția (Ctrl+C)",
-  editorPaste: "Lipește (Ctrl+V)"
+  editorPaste: "Lipește (Ctrl+V)",
+  editorEraser: "Radieră (transparent pe straturile superioare, culoarea fundalului pe stratul de bază)",
+  editorLayers: "Straturi",
+  editorLayerBase: "Fundal",
+  editorLayerName: "Strat",
+  editorAddLayer: "Strat nou",
+  editorDeleteLayer: "Șterge stratul",
+  editorMergeDown: "Îmbină cu stratul de dedesubt",
+  editorMoveLayerUp: "Mută stratul în sus",
+  editorMoveLayerDown: "Mută stratul în jos",
+  editorLayerVisibility: "Afișează / ascunde (salvarea include doar straturile vizibile)"
 };
 
 export default ro;

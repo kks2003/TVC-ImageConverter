@@ -964,7 +964,17 @@ const App: React.FC = () => {
           textHint: t.editorTextHint,
           stamp: t.editorStamp,
           copy: t.editorCopy,
-          paste: t.editorPaste
+          paste: t.editorPaste,
+          eraser: t.editorEraser,
+          layers: t.editorLayers,
+          layerBase: t.editorLayerBase,
+          layerName: t.editorLayerName,
+          addLayer: t.editorAddLayer,
+          deleteLayer: t.editorDeleteLayer,
+          mergeDown: t.editorMergeDown,
+          moveLayerUp: t.editorMoveLayerUp,
+          moveLayerDown: t.editorMoveLayerDown,
+          layerVisibility: t.editorLayerVisibility
         }}
         lang={lang}
         onLangChange={(l) => setLang(l as Language)}

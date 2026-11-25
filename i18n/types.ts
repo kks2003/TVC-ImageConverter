@@ -234,4 +234,14 @@ export interface Translation {
   editorStamp: string;
   editorCopy: string;
   editorPaste: string;
+  editorEraser: string;
+  editorLayers: string;
+  editorLayerBase: string;
+  editorLayerName: string;
+  editorAddLayer: string;
+  editorDeleteLayer: string;
+  editorMergeDown: string;
+  editorMoveLayerUp: string;
+  editorMoveLayerDown: string;
+  editorLayerVisibility: string;
 }

@@ -235,7 +235,17 @@ const uk: Translation = {
   editorTextHint: "Клацніть на зображенні, щоб розмістити (ліва кнопка: основний колір, права: додатковий), перетягніть на місце й натисніть Enter.",
   editorStamp: "Залишити копію тут і рухати виділення далі (S)",
   editorCopy: "Копіювати виділення (Ctrl+C)",
-  editorPaste: "Вставити (Ctrl+V)"
+  editorPaste: "Вставити (Ctrl+V)",
+  editorEraser: "Гумка (прозорість на верхніх шарах, колір тла на базовому шарі)",
+  editorLayers: "Шари",
+  editorLayerBase: "Тло",
+  editorLayerName: "Шар",
+  editorAddLayer: "Новий шар",
+  editorDeleteLayer: "Видалити шар",
+  editorMergeDown: "Об'єднати з нижнім шаром",
+  editorMoveLayerUp: "Шар вище",
+  editorMoveLayerDown: "Шар нижче",
+  editorLayerVisibility: "Показати / сховати (зберігаються лише видимі шари)"
 };
 
 export default uk;

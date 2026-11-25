@@ -235,7 +235,17 @@ const de: Translation = {
   editorTextHint: "Klicke ins Bild, um ihn zu platzieren (links: Primär-, rechts: Sekundärfarbe), ziehe ihn an die Stelle und drücke Enter.",
   editorStamp: "Kopie hier stempeln und Auswahl weiter verschieben (S)",
   editorCopy: "Auswahl kopieren (Strg+C)",
-  editorPaste: "Einfügen (Strg+V)"
+  editorPaste: "Einfügen (Strg+V)",
+  editorEraser: "Radierer (durchsichtig auf oberen Ebenen, Hintergrundfarbe auf der Basisebene)",
+  editorLayers: "Ebenen",
+  editorLayerBase: "Hintergrund",
+  editorLayerName: "Ebene",
+  editorAddLayer: "Neue Ebene",
+  editorDeleteLayer: "Ebene löschen",
+  editorMergeDown: "Mit der Ebene darunter zusammenführen",
+  editorMoveLayerUp: "Ebene nach oben",
+  editorMoveLayerDown: "Ebene nach unten",
+  editorLayerVisibility: "Ein-/ausblenden (gespeichert werden nur sichtbare Ebenen)"
 };
 
 export default de;

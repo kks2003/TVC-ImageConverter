@@ -234,7 +234,17 @@ const en: Translation = {
   editorTextHint: "Click on the image to place it (left: primary, right: secondary colour), drag it into place, then press Enter.",
   editorStamp: "Stamp a copy here and keep moving the selection (S)",
   editorCopy: "Copy selection (Ctrl+C)",
-  editorPaste: "Paste (Ctrl+V)"
+  editorPaste: "Paste (Ctrl+V)",
+  editorEraser: "Eraser (see-through on upper layers, background colour on the base layer)",
+  editorLayers: "Layers",
+  editorLayerBase: "Background",
+  editorLayerName: "Layer",
+  editorAddLayer: "New layer",
+  editorDeleteLayer: "Delete layer",
+  editorMergeDown: "Merge into the layer below",
+  editorMoveLayerUp: "Move layer up",
+  editorMoveLayerDown: "Move layer down",
+  editorLayerVisibility: "Show / hide (saving includes only visible layers)"
 };
 
 export default en;

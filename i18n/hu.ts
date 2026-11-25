@@ -236,7 +236,17 @@ const hu: Translation = {
   editorTextHint: "Kattints a képre a lerakáshoz (bal: elsődleges, jobb: másodlagos szín), húzd a helyére, majd Enter.",
   editorStamp: "Lenyomat ide, a kijelölés mozgatható tovább (S)",
   editorCopy: "Kijelölés másolása (Ctrl+C)",
-  editorPaste: "Beillesztés (Ctrl+V)"
+  editorPaste: "Beillesztés (Ctrl+V)",
+  editorEraser: "Radír (felső rétegen áttetszővé tesz, az alapon háttérszínnel fest)",
+  editorLayers: "Rétegek",
+  editorLayerBase: "Háttér",
+  editorLayerName: "Réteg",
+  editorAddLayer: "Új réteg",
+  editorDeleteLayer: "Réteg törlése",
+  editorMergeDown: "Összevonás az alatta lévővel",
+  editorMoveLayerUp: "Réteg feljebb",
+  editorMoveLayerDown: "Réteg lejjebb",
+  editorLayerVisibility: "Megjelenítés / elrejtés (a mentés csak a látható rétegeket tartalmazza)"
 };
 
 export default hu;
