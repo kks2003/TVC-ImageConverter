@@ -62,7 +62,7 @@ describe('searchBestSettings', () => {
     seedRandom(5);
     const seen: number[] = [];
     await searchBestSettings(makeInput(gradient), { onProgress: (p) => seen.push(p) });
-    expect(seen.at(-1)).toBe(1);
+    expect(seen[seen.length - 1]).toBe(1);
 
     const ctrl = new AbortController();
     ctrl.abort();
