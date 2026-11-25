@@ -375,27 +375,30 @@ const buildPaletteLUT = (paletteRGB: RGB[], usePerceptual: boolean, disabledPair
   return { nearest, patternPairs, yliluoma: yliluomaLUT ?? new Uint8Array(0) };
 };
 
-// Separable Box Blur for perceptual comparison
-const separableBlur = (data: Float32Array | Uint8ClampedArray, width: number, height: number, radius: number, isRgba: boolean): Float32Array => {
-  const temp = new Float32Array(width * height * 3);
-  const result = new Float32Array(width * height * 3);
+// Separable Box Blur for perceptual comparison. Runs once per search
+// candidate (thousands of times per Auto-Tune), so the tap loops are clamped
+// up front instead of bounds-checking every tap. Additions happen in the same
+// order as a naive implementation, so results are bit-identical.
+const separableBlur = (data: Float32Array | Uint8ClampedArray, width: number, height: number, radius: number, isRgba: boolean, out?: Float32Array, scratch?: Float32Array): Float32Array => {
+  const temp = scratch ?? new Float32Array(width * height * 3);
+  const result = out ?? new Float32Array(width * height * 3);
   const channels = isRgba ? 4 : 3;
 
   // Horizontal pass
   for (let y = 0; y < height; y++) {
+    const rowIn = y * width;
     for (let x = 0; x < width; x++) {
-      let r = 0, g = 0, b = 0, count = 0;
-      for (let dx = -radius; dx <= radius; dx++) {
-        const nx = x + dx;
-        if (nx >= 0 && nx < width) {
-          const i = (y * width + nx) * channels;
-          r += data[i];
-          g += data[i + 1];
-          b += data[i + 2];
-          count++;
-        }
+      const lo = x - radius < 0 ? 0 : x - radius;
+      const hi = x + radius >= width ? width - 1 : x + radius;
+      let r = 0, g = 0, b = 0;
+      for (let nx = lo; nx <= hi; nx++) {
+        const i = (rowIn + nx) * channels;
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
       }
-      const outIdx = (y * width + x) * 3;
+      const count = hi - lo + 1;
+      const outIdx = (rowIn + x) * 3;
       temp[outIdx] = r / count;
       temp[outIdx + 1] = g / count;
       temp[outIdx + 2] = b / count;
@@ -404,17 +407,16 @@ const separableBlur = (data: Float32Array | Uint8ClampedArray, width: number, he
 
   // Vertical pass
   for (let y = 0; y < height; y++) {
+    const lo = y - radius < 0 ? 0 : y - radius;
+    const hi = y + radius >= height ? height - 1 : y + radius;
+    const count = hi - lo + 1;
     for (let x = 0; x < width; x++) {
-      let r = 0, g = 0, b = 0, count = 0;
-      for (let dy = -radius; dy <= radius; dy++) {
-        const ny = y + dy;
-        if (ny >= 0 && ny < height) {
-          const i = (ny * width + x) * 3;
-          r += temp[i];
-          g += temp[i + 1];
-          b += temp[i + 2];
-          count++;
-        }
+      let r = 0, g = 0, b = 0;
+      for (let ny = lo; ny <= hi; ny++) {
+        const i = (ny * width + x) * 3;
+        r += temp[i];
+        g += temp[i + 1];
+        b += temp[i + 2];
       }
       const outIdx = (y * width + x) * 3;
       result[outIdx] = r / count;
@@ -425,19 +427,49 @@ const separableBlur = (data: Float32Array | Uint8ClampedArray, width: number, he
   return result;
 };
 
-export const findBestColors = (img: HTMLImageElement, count: number): number[] => {
+interface PaletteLUTPair { perceptual: PaletteLUT; standard: PaletteLUT }
+
+// Building a palette's LUTs (32^3 entries, Yliluoma plans especially) is the
+// most expensive fixed cost of a search, and the same few palettes are used
+// on every run - so keep them for the lifetime of the page/worker.
+const LUT_CACHE = new Map<string, PaletteLUTPair>();
+const LUT_CACHE_LIMIT = 48;
+const getPaletteLUTs = (pal: number[], needsYliluoma: boolean, disabledPairSet: Set<string>, disabledKey: string): PaletteLUTPair => {
+  const cacheKey = `${pal.join(',')}|${needsYliluoma ? 'y' : '-'}|${disabledKey}`;
+  const hit = LUT_CACHE.get(cacheKey);
+  if (hit) return hit;
+  const palRgb = pal.map(idx => PALETTE_RGB[idx]);
+  const yliluomaLUT = needsYliluoma ? buildYliluomaOnly(palRgb, YLILUOMA_CANDIDATES, disabledPairSet) : undefined;
+  const luts = {
+    perceptual: buildPaletteLUT(palRgb, true, disabledPairSet, yliluomaLUT),
+    standard: buildPaletteLUT(palRgb, false, disabledPairSet, yliluomaLUT)
+  };
+  if (LUT_CACHE.size >= LUT_CACHE_LIMIT) LUT_CACHE.delete(LUT_CACHE.keys().next().value as string);
+  LUT_CACHE.set(cacheKey, luts);
+  return luts;
+};
+
+// Small whole-image thumbnail (64px wide, aspect kept) used to pick the most
+// frequent palette colours. Returns null when no 2D canvas is available.
+const sampleColorThumbnail = (img: HTMLImageElement): Uint8ClampedArray | null => {
   const w = 64;
   const h = Math.max(1, Math.round(w * (img.height / (img.width || 1))));
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  if (!ctx) {
-    return Array.from({ length: count }, (_, i) => i);
-  }
-
+  if (!ctx) return null;
   ctx.drawImage(img, 0, 0, w, h);
-  const data = ctx.getImageData(0, 0, w, h).data;
+  return ctx.getImageData(0, 0, w, h).data;
+};
+
+export const findBestColors = (img: HTMLImageElement, count: number): number[] => {
+  const data = sampleColorThumbnail(img);
+  return data ? countBestColors(data, count) : Array.from({ length: count }, (_, i) => i);
+};
+
+// The `count` palette colours that are nearest to the most pixels.
+export const countBestColors = (data: Uint8ClampedArray, count: number): number[] => {
   const colorCounts = new Array(15).fill(0);
 
   for (let i = 0; i < data.length; i += 4) {
@@ -472,16 +504,54 @@ export interface CompositionSettings {
   backgroundColor?: string;
 }
 
-export const findBestSettings = async (
+export type TuneStrategy = 'artistic' | 'fidelity' | 'flat' | 'precision';
+export type TuneOutputMode = 'tvc-16' | 'tvc-4' | 'tvc-2';
+
+export interface TuneResult {
+  adjustments: ImageAdjustments;
+  ditherMethod: DitherMethod;
+  selectedColors?: number[];
+  perceptualWeighting: boolean;
+}
+
+// Everything the search needs, as plain data - so it can be posted to a
+// Web Worker (see autoTune.worker.ts) and unit-tested without a DOM.
+export interface TuneInput {
+  data: Uint8ClampedArray; // RGBA, w*h*4
+  w: number;
+  h: number;
+  outputMode: TuneOutputMode;
+  currentSelectedColors: number[];
+  topColors: number[] | null; // countBestColors() result for 4/2-colour modes
+  tuningStrategy: TuneStrategy;
+  disabledPatternPairs: string[];
+}
+
+export interface TuneRunOptions {
+  onProgress?: (progress: number) => void;
+  signal?: AbortSignal;
+  // On the main thread the search must hand control back to the browser now
+  // and then. A Web Worker doesn't need to (and must not: background-tab
+  // timer throttling would turn every pause into >= 1 second).
+  cooperative?: boolean;
+}
+
+const FALLBACK_RESULT: TuneResult = {
+  adjustments: { brightness: 0, contrast: 0, saturation: 100, gamma: 1.0, ditherAmount: 50, noiseLevel: 50, solidSnap: 50, denoise: 0, unsharpMask: 0, toneMapping: 0 },
+  ditherMethod: 'pattern-tvc',
+  perceptualWeighting: true
+};
+
+// Main-thread part: renders the current composition (zoom/position/fit) into
+// the small analysis canvas and reads back its pixels.
+export const prepareTuneInput = (
   img: HTMLImageElement,
-  outputMode: 'tvc-16' | 'tvc-4' | 'tvc-2' = 'tvc-16',
+  outputMode: TuneOutputMode = 'tvc-16',
   currentSelectedColors: number[] = [],
-  onProgress?: (progress: number) => void,
-  signal?: AbortSignal,
-  tuningStrategy: 'artistic' | 'fidelity' | 'flat' | 'precision' = 'artistic',
+  tuningStrategy: TuneStrategy = 'artistic',
   composition?: CompositionSettings,
   disabledPatternPairs: string[] = []
-): Promise<{ adjustments: ImageAdjustments, ditherMethod: DitherMethod, selectedColors?: number[], perceptualWeighting: boolean }> => {
+): TuneInput | null => {
   // Fast analysis canvas (64x120 provides identical ranking with 4x speedup)
   const w = 64; 
   const h = 120;
@@ -491,13 +561,7 @@ export const findBestSettings = async (
   canvas.height = h;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   
-  if (!ctx) {
-    return { 
-      adjustments: { brightness: 0, contrast: 0, saturation: 100, gamma: 1.0, ditherAmount: 50, noiseLevel: 50, solidSnap: 50, denoise: 0, unsharpMask: 0, toneMapping: 0 },
-      ditherMethod: 'pattern-tvc',
-      perceptualWeighting: true
-    };
-  }
+  if (!ctx) return null;
 
   if (composition) {
     const zoom = composition.zoom ?? 1;
@@ -547,8 +611,36 @@ export const findBestSettings = async (
     ctx.drawImage(img, 0, 0, w, h);
   }
 
-  const imageData = ctx.getImageData(0, 0, w, h);
-  const data = imageData.data;
+  const data = ctx.getImageData(0, 0, w, h).data;
+  let topColors: number[] | null = null;
+  if (outputMode === 'tvc-4' || outputMode === 'tvc-2') {
+    const thumb = sampleColorThumbnail(img);
+    topColors = thumb ? countBestColors(thumb, outputMode === 'tvc-4' ? 4 : 2) : null;
+  }
+  return { data, w, h, outputMode, currentSelectedColors, topColors, tuningStrategy, disabledPatternPairs };
+};
+
+// Convenience wrapper: sample + search on the calling thread.
+export const findBestSettings = async (
+  img: HTMLImageElement,
+  outputMode: TuneOutputMode = 'tvc-16',
+  currentSelectedColors: number[] = [],
+  onProgress?: (progress: number) => void,
+  signal?: AbortSignal,
+  tuningStrategy: TuneStrategy = 'artistic',
+  composition?: CompositionSettings,
+  disabledPatternPairs: string[] = []
+): Promise<TuneResult> => {
+  const input = prepareTuneInput(img, outputMode, currentSelectedColors, tuningStrategy, composition, disabledPatternPairs);
+  if (!input) return { ...FALLBACK_RESULT };
+  return searchBestSettings(input, { onProgress, signal, cooperative: true });
+};
+
+// The search itself: pure computation over TuneInput, no DOM access.
+export const searchBestSettings = async (input: TuneInput, opts: TuneRunOptions = {}): Promise<TuneResult> => {
+  const { data, w, h, outputMode, currentSelectedColors, tuningStrategy, disabledPatternPairs } = input;
+  const { onProgress, signal, cooperative = false } = opts;
+
 
   // --- ANALYSIS PHASE ---
   const lumas: number[] = [];
@@ -710,7 +802,7 @@ export const findBestSettings = async (
   if (outputMode === 'tvc-16') {
     paletteVariations = [Array.from({ length: 15 }, (_, i) => i)];
   } else if (outputMode === 'tvc-4') {
-    const top4 = findBestColors(img, 4);
+    const top4 = input.topColors ?? [0, 1, 2, 3];
     paletteVariations = [
       currentSelectedColors.length === 4 ? currentSelectedColors : [0, 1, 2, 3],
       [0, 1, 2, 3],
@@ -722,7 +814,7 @@ export const findBestSettings = async (
       top4
     ];
   } else if (outputMode === 'tvc-2') {
-    const top2 = findBestColors(img, 2);
+    const top2 = input.topColors ?? [0, 14];
     paletteVariations = [
       currentSelectedColors.length === 2 ? currentSelectedColors : [0, 14],
       [0, 14],
@@ -751,15 +843,11 @@ export const findBestSettings = async (
   // Pre-build Look-Up Tables for all palettes
   const disabledPairSet = new Set(disabledPatternPairs);
   const needsYliluoma = ditherMethods.includes('yliluoma');
-  const lutCache = new Map<string, { perceptual: PaletteLUT; standard: PaletteLUT }>();
+  const lutCache = new Map<string, PaletteLUTPair>();
+  const disabledKey = Array.from(disabledPairSet).sort().join(';');
   for (const pal of paletteVariations) {
     const key = pal.join(',');
-    const palRgb = pal.map(idx => PALETTE_RGB[idx]);
-    const yliluomaLUT = needsYliluoma ? buildYliluomaOnly(palRgb, YLILUOMA_CANDIDATES, disabledPairSet) : undefined;
-    lutCache.set(key, {
-      perceptual: buildPaletteLUT(palRgb, true, disabledPairSet, yliluomaLUT),
-      standard: buildPaletteLUT(palRgb, false, disabledPairSet, yliluomaLUT)
-    });
+    lutCache.set(key, getPaletteLUTs(pal, needsYliluoma, disabledPairSet, disabledKey));
   }
 
   const getSettingsVariations = (method: DitherMethod) => {
@@ -826,6 +914,11 @@ export const findBestSettings = async (
   let lastYieldTime = performance.now();
 
   const blurredOriginalTarget = separableBlur(data, w, h, 2, true);
+  // Reused for every candidate (every pixel is overwritten each time).
+  const ditheredBuf = new Float32Array(w * h * 3);
+  const simBuf = new Float32Array(w * h * 4);
+  const blurOutBuf = new Float32Array(w * h * 3);
+  const blurTmpBuf = new Float32Array(w * h * 3);
 
   for (const color of colorVariations) {
     const adjData = new Uint8ClampedArray(data);
@@ -882,7 +975,7 @@ export const findBestSettings = async (
             if (onProgress) {
               onProgress(Math.min(1, currentIteration / (totalIterations || 1)));
             }
-            await new Promise(r => setTimeout(r, 0));
+            if (cooperative) await new Promise(r => setTimeout(r, 0));
             if (signal?.aborted) {
               throw new Error('Auto-tune aborted');
             }
@@ -890,11 +983,38 @@ export const findBestSettings = async (
           }
 
           const activeLut = settings.perceptual ? luts.perceptual : luts.standard;
-          const ditheredData = new Float32Array(w * h * 3);
-          const simData = new Float32Array(adjData); 
+          const ditheredData = ditheredBuf;
+          const simData = simBuf;
+          simData.set(adjData);
           const noiseLevel = settings.noise / 100;
           const ditherAmount = settings.amount / 100;
           const solidSnap = settings.snap;
+          // Error of the pixel being diffused (set right before distribute()).
+          let errR = 0, errG = 0, errB = 0, errX = 0, errY = 0;
+          const distribute = (dx: number, dy: number, factor: number) => {
+            const nx = errX + dx, ny = errY + dy;
+            if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+              const ni = (ny * w + nx) * 4;
+              simData[ni] += errR * factor * ditherAmount;
+              simData[ni + 1] += errG * factor * ditherAmount;
+              simData[ni + 2] += errB * factor * ditherAmount;
+            }
+          };
+
+          // Per-method constants, resolved once instead of per pixel.
+          const mKind = method === 'pattern-tvc' ? 0
+            : method === 'yliluoma' ? 1
+            : (method === 'none' || method === 'threshold') ? 2
+            : (method.startsWith('ordered-') || method === 'bayer-16x16' || method === 'cluster-dot-8x8' || method === 'blue-noise' || method === 'blue-noise-16x16') ? 3
+            : 4;
+          let ordMap: number[][] = BAYER_4x4, ordDiv = 16, ordSize = 4;
+          if (method === 'blue-noise') { ordMap = BLUE_NOISE_8x8; ordSize = 8; ordDiv = 64; }
+          else if (method === 'blue-noise-16x16') { ordMap = BLUE_NOISE_16x16; ordSize = 16; ordDiv = 256; }
+          else if (method === 'ordered-8x8') { ordMap = BAYER_8x8; ordSize = 8; ordDiv = 64; }
+          else if (method === 'ordered-4x4') { ordMap = BAYER_4x4; ordSize = 4; ordDiv = 16; }
+          else if (method === 'ordered-2x2') { ordMap = BAYER_2x2; ordSize = 2; ordDiv = 4; }
+          else if (method === 'bayer-16x16') { ordMap = BAYER_16x16; ordSize = 16; ordDiv = 256; }
+          else if (method === 'cluster-dot-8x8') { ordMap = CLUSTER_DOT_8x8; ordSize = 8; ordDiv = 64; }
 
           for (let y = 0; y < h; y++) {
             for (let x = 0; x < w; x++) {
@@ -906,7 +1026,7 @@ export const findBestSettings = async (
 
               let fr = 0, fg = 0, fb = 0;
 
-              if (method === 'pattern-tvc') {
+              if (mKind === 0) {
                 const lutIdx = getLutIdx(r, g, b);
                 const pair = activeLut.patternPairs[lutIdx];
                 const isChecker = (x + y) % 2 === 0;
@@ -914,7 +1034,7 @@ export const findBestSettings = async (
                 fg = isChecker ? pair.c1.g : pair.c2.g;
                 fb = isChecker ? pair.c1.b : pair.c2.b;
               }
-              else if (method === 'yliluoma') {
+              else if (mKind === 1) {
                 const lutIdx = getLutIdx(r, g, b);
                 const nr = activeLut.nearest[lutIdx];
                 const distToSolid = getDistanceSq(r, g, b, nr.r, nr.g, nr.b, settings.perceptual);
@@ -928,26 +1048,15 @@ export const findBestSettings = async (
                   fr = c.r; fg = c.g; fb = c.b;
                 }
               }
-              else if (method === 'none' || method === 'threshold') {
+              else if (mKind === 2) {
                 // NOTE: amplitude unified to match ordered/diffusion modes (was *64).
                 const micro = noiseLevel > 0 ? (Math.random() - 0.5) * 2 * noiseLevel * 32 : 0;
                 const lutIdx = getLutIdx(r + micro, g + micro, b + micro);
                 const nr = activeLut.nearest[lutIdx];
                 fr = nr.r; fg = nr.g; fb = nr.b;
               }
-              else if (method.startsWith('ordered-') || method === 'bayer-16x16' || method === 'cluster-dot-8x8' || method === 'blue-noise' || method === 'blue-noise-16x16') {
-                let map: number[][] = BAYER_4x4;
-                let div = 16;
-                let size = 4;
-
-                if (method === 'blue-noise') { map = BLUE_NOISE_8x8; size = 8; div = 64; }
-                else if (method === 'blue-noise-16x16') { map = BLUE_NOISE_16x16; size = 16; div = 256; }
-                else if (method === 'ordered-8x8') { map = BAYER_8x8; size = 8; div = 64; }
-                else if (method === 'ordered-4x4') { map = BAYER_4x4; size = 4; div = 16; }
-                else if (method === 'ordered-2x2') { map = BAYER_2x2; size = 2; div = 4; }
-                else if (method === 'bayer-16x16') { map = BAYER_16x16; size = 16; div = 256; }
-                else if (method === 'cluster-dot-8x8') { map = CLUSTER_DOT_8x8; size = 8; div = 64; } 
-
+              else if (mKind === 3) {
+                const map = ordMap, size = ordSize, div = ordDiv;
                 const threshold = map[y % size][x % size] / div;
                 const bias = (threshold - 0.5) * 128;
                 const micro = noiseLevel > 0 ? (Math.random() - 0.5) * 2 * noiseLevel * 32 : 0;
@@ -1005,14 +1114,7 @@ export const findBestSettings = async (
                 const eg = isSolidMatch ? 0 : oldG - fg;
                 const eb = isSolidMatch ? 0 : oldB - fb;
                 
-                const distribute = (dx: number, dy: number, factor: number) => {
-                  if (x + dx >= 0 && x + dx < w && y + dy >= 0 && y + dy < h) {
-                    const ni = ((y + dy) * w + (x + dx)) * 4;
-                    simData[ni] += er * factor * ditherAmount;
-                    simData[ni + 1] += eg * factor * ditherAmount;
-                    simData[ni + 2] += eb * factor * ditherAmount;
-                  }
-                };
+                errR = er; errG = eg; errB = eb; errX = x; errY = y;
 
                 if (method === 'floyd-steinberg' || method === 'pattern-tvc-diffusion') {
                   distribute(1, 0, 7/16);
@@ -1056,7 +1158,7 @@ export const findBestSettings = async (
             }
           }
 
-          const blurredDither = separableBlur(ditheredData, w, h, 2, false);
+          const blurredDither = separableBlur(ditheredData, w, h, 2, false, blurOutBuf, blurTmpBuf);
 
           let totalError = 0;
           for (let i = 0; i < w * h * 3; i += 3) {

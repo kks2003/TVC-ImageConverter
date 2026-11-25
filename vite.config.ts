@@ -15,6 +15,12 @@ export default defineConfig(({ mode }) => {
           if (isOffline) {
             return html;
           } else {
+            // Installable app (PWA) - online build only: a service worker
+            // can't run from the single offline file (file://).
+            html = html.replace(
+              '</head>',
+              '  <link rel="manifest" href="./manifest.webmanifest">\n    <meta name="theme-color" content="#2563eb">\n    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">\n    <link rel="icon" type="image/png" href="./icons/icon-192.png">\n  </head>'
+            );
             html = html.replace(
               '</head>',
               '  <style>@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap");</style>\n  </head>'

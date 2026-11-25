@@ -51,6 +51,8 @@ export interface ImageAdjustments {
   denoise: number;      // 0 to 100
   unsharpMask: number;  // 0 to 100
   toneMapping: number;  // 0 to 100
+  hue?: number;         // -180 to 180 degrees (rotation, like CSS hue-rotate)
+  temperature?: number; // -100 (cool/blue) to 100 (warm/orange)
 }
 
 export interface ProcessingSettings {

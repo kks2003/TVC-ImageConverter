@@ -1,4 +1,4 @@
-# Videoton TV Computert (TVC) Image Maker - Comprehensive User Manual (v4.3)
+# Videoton TV Computer (TVC) Image Maker - Comprehensive User Manual (v4.3)
 
 ## Introduction
 The Videoton TV Computert (TVC) Image Maker is a professional-grade tool designed to convert modern digital images into the native graphics format of the classic 8-bit Hungarian Videoton TV Computer (TVC). The tool accurately simulates the hardware limitations of the TVC, including its unique 16-color palette (note: since there are two blacks, it is effectively 15 colors) and anamorphic pixels.
@@ -165,3 +165,33 @@ The whole cut-and-move is treated as a **single undoable step**, so one `Ctrl+Z`
 *   If your image has a lot of fine text, try the 2-color or 4-color modes, as their higher horizontal resolution makes text much more legible.
 *   When preparing images for a real CRT TV, remember that colors will bleed slightly; the "Pattern TVC" dithering method is specifically designed to exploit this blending.
 *   **Advanced Tip:** For the best results with photos, try enabling **Perceptual Color Distance** and **Serpentine Scanning** together. If the image looks a bit "muddy", a small amount of **Unsharp Mask** (around 20-30%) can make a huge difference.
+
+## 5. New Features
+
+### 5.1. Paste from the clipboard
+You can also load an image with **Ctrl+V** (e.g. a screenshot or an image copied from a browser). Exported files of a pasted image are named `clipboard`. In text fields and in the Pixel Editor Ctrl+V works as usual.
+
+### 5.2. Before / after comparison
+The **compare** button in the top-right corner of the result preview lays the original image over the result with a draggable divider (also movable with the ← → keys). The original is framed exactly like the conversion, so both sides line up. The mouse wheel still zooms while comparing.
+
+### 5.3. Hue and colour temperature
+Image adjustments have two new sliders: **Hue** rotates the colours (in degrees), **Temperature** makes the image warmer (orange) or cooler (blue). Both act before the other adjustments, like a white balance, and do nothing at 0.
+
+### 5.4. Undo settings
+Every converter settings change can be undone: **Ctrl+Z** (undo), **Ctrl+Y** or **Ctrl+Shift+Z** (redo), or the arrows in the Image adjustments header. A slider drag or several quick wheel zooms count as one step. Loading a new image clears the history.
+
+### 5.5. Compare dither methods
+The **grid** button in the Dither method header renders the image with all 20 methods side by side (all other settings unchanged). Click the one you like; Esc closes the window.
+
+### 5.6. Region dithering
+The **brush** button on the result preview lets you paint an area that gets its own dither method (e.g. finer on a face, flat on the background). Left button paints, right button erases; choose the method and brush size in the bar below the preview. Saved files contain the blended result. The painted area does not apply after switching to another colour mode.
+
+### 5.7. Pixel Editor: text, stamp, layers
+- **Text:** with the T tool, type a caption, choose size, font and bold, then click on the image (left: primary, right: secondary colour). The text appears as a floating selection with a see-through background: drag it into place and press Enter. Accented letters work; in the 16-colour mode text keeps its shape on the 2:1 pixels.
+- **Stamp:** with a floating selection, **S** (or the stamp button) leaves a copy and keeps the selection movable. Esc cancels the whole operation, Enter commits it as one step.
+- **Copy / paste:** **Ctrl+C** copies the floating selection, **Ctrl+V** pastes it as a new floating selection.
+- **Layers:** in the Layers panel on the left you can add, delete, reorder, merge and hide layers. Upper layers start see-through; every tool works on the active layer. Saving flattens the visible layers.
+- **Eraser:** makes pixels see-through on upper layers and paints the background colour on the background layer.
+
+### 5.8. Installable app
+The online version (GitHub Pages) can be installed as an app from the browser's "Install" / "Add to Home screen" menu, and after opening it once it also starts without an internet connection.

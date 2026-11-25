@@ -33,6 +33,13 @@ A Videoton TV Computer (TVC) Képkészítő és Pixel Szerkesztő egy professzio
   - **ZX7:** Beépített ZX7 algoritmus által tömörített bináris formátum (`.bin.zx7`), azonnal futtatható TVC-n.
   - **TVCSET:** Beállítások mentése és betöltése JSON formátumban.
 
+- **Kényelmi funkciók:**
+  - Beillesztés vágólapról (Ctrl+V), előtte/utána összehasonlítás húzható elválasztóval.
+  - Színárnyalat és színhőmérséklet csúszka, beállítások visszavonása (Ctrl+Z / Ctrl+Y).
+  - Dither módszerek összehasonlítása rácsban, régiónkénti dithering (ecsettel festett terület saját módszerrel).
+  - Automatikus finomhangoló Web Workerben: gyorsabb, és háttérbe tett lapon sem lassul le.
+  - Pixel Szerkesztő: szöveg eszköz, bélyegző, másolás/beillesztés, rétegek, radír.
+
 - **Offline és többnyelvű:**
   - Egyetlen önálló HTML fájlban fut (`image2tvc_offline_v4_3.html`), nem igényel szervert vagy internetkapcsolatot.
   - Magyar és angol nyelvű kezelőfelület és részletes beépített kézikönyv (`USER_MANUAL_HU.md`, `USER_MANUAL_EN.md`).
@@ -56,13 +63,21 @@ Ha módosítani szeretné a forráskódot vagy új buildet készíteni:
    ```bash
    npm run dev
    ```
-4. **Önálló offline HTML fordítása:**
+4. **Tesztek és típusellenőrzés:**
+   ```bash
+   npm test
+   npm run lint
+   ```
+5. **Önálló offline HTML fordítása:**
    ```bash
    npm run build:offline
    ```
    vagy Windows alatt indítsa el a **`build_offline.bat`** szkriptet.
 
 ---
+
+### 3. Automatikus kiadás
+Minden pusholásnál a GitHub Actions lefuttatja a típusellenőrzést, a teszteket és mindkét buildet (a fájlok letölthetők a futás „Artifacts” részéből). A `main` ágra pusholva az online változat automatikusan kikerül a GitHub Pages-re, a valódi offline HTML-lel együtt (`image2tvc_offline.html`, beágyazott betűtípusokkal). Az online változat telepíthető alkalmazásként (PWA) is.
 
 ## Licenc és Köszönetnyilvánítás
 - TVC hardveres paletta és formátum referenciák: [tvc.homeserver.hu](http://tvc.homeserver.hu)

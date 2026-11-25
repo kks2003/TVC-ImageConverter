@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Type check
+        run: npm run lint
+      - name: Unit tests
+        run: npm test
+      - name: Build offline single-file HTML (fonts embedded)
+        run: |
+          npm run build:offline
+          mkdir -p out
+          cp dist/index.html out/image2tvc_offline.html
+      - name: Build online version (GitHub Pages)
+        run: |
+          npm run build:online
+          # index.html plus the PWA files (manifest, service worker, icons)
+          cp -r dist/. out/
+          touch out/.nojekyll
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tvc-image-converter
+          path: out/
+          include-hidden-files: true
+
+  deploy-pages:
+    # Publishes to the gh-pages branch, which GitHub Pages already serves.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: tvc-image-converter
+          path: out
+      - name: Push to gh-pages
+        working-directory: out
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898599+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "Deploy ${GITHUB_SHA::7} to GitHub Pages"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
