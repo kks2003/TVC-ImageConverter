@@ -20,7 +20,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ t, lang, onLangChange, onShowManu
           TVC
         </div>
         <h1 className="text-sm md:text-base font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-          {t.headerTitle} <span className="text-[10px] font-mono text-blue-500/80 ml-1">V4.3</span>
+          {t.headerTitle} <span className="text-[10px] font-mono text-blue-500/80 ml-1">V{__APP_VERSION__}</span>
         </h1>
       </div>
       <div className="flex items-center space-x-3">

@@ -1,4 +1,4 @@
-# Videoton TV Computer (TVC) Image Converter & Pixel Editor (v4.3)
+# Videoton TV Computer (TVC) Image Converter & Pixel Editor (v4.4)
 
 🌐 **Élő webes verzió (Online App):** [https://kks2003.github.io/TVC-ImageConverter/](https://kks2003.github.io/TVC-ImageConverter/)
 
@@ -41,7 +41,7 @@ A Videoton TV Computer (TVC) Képkészítő és Pixel Szerkesztő egy professzio
   - Pixel Szerkesztő: szöveg eszköz, bélyegző, másolás/beillesztés, rétegek, radír.
 
 - **Offline és többnyelvű:**
-  - Egyetlen önálló HTML fájlban fut (`image2tvc_offline_v4_3.html`), nem igényel szervert vagy internetkapcsolatot.
+  - Egyetlen önálló HTML fájlban fut (`image2tvc_offline_v4_4.html`), nem igényel szervert vagy internetkapcsolatot.
   - Magyar és angol nyelvű kezelőfelület és részletes beépített kézikönyv (`USER_MANUAL_HU.md`, `USER_MANUAL_EN.md`).
 
 ---
@@ -49,7 +49,7 @@ A Videoton TV Computer (TVC) Képkészítő és Pixel Szerkesztő egy professzio
 ## Használat (Quick Start)
 
 ### 1. Közvetlen használat (Offline)
-Nem szükséges semmit telepíteni! Egyszerűen nyissa meg az **`image2tvc_offline_v4_3.html`** fájlt bármely modern webböngészőben (Chrome, Edge, Firefox).
+Nem szükséges semmit telepíteni! Egyszerűen nyissa meg az **`image2tvc_offline_v4_4.html`** fájlt bármely modern webböngészőben (Chrome, Edge, Firefox).
 
 ### 2. Fejlesztői környezet (Development)
 Ha módosítani szeretné a forráskódot vagy új buildet készíteni:

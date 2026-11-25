@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { viteSingleFile } from 'vite-plugin-singlefile';
+import pkg from './package.json';
 
 export default defineConfig(({ mode }) => {
   const isOffline = mode === 'offline';
@@ -35,6 +36,10 @@ export default defineConfig(({ mode }) => {
         }
       }
     ],
+    // Shown in the header (e.g. "4.4"); bump the version in package.json only.
+    define: {
+      __APP_VERSION__: JSON.stringify(pkg.version.split('.').slice(0, 2).join('.')),
+    },
     base: './',
     build: {
       outDir: 'dist',

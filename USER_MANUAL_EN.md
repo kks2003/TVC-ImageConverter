@@ -1,4 +1,4 @@
-# Videoton TV Computer (TVC) Image Maker - Comprehensive User Manual (v4.3)
+# Videoton TV Computer (TVC) Image Maker - Comprehensive User Manual (v4.4)
 
 ## Introduction
 The Videoton TV Computert (TVC) Image Maker is a professional-grade tool designed to convert modern digital images into the native graphics format of the classic 8-bit Hungarian Videoton TV Computer (TVC). The tool accurately simulates the hardware limitations of the TVC, including its unique 16-color palette (note: since there are two blacks, it is effectively 15 colors) and anamorphic pixels.
