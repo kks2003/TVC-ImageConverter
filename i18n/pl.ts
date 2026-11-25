@@ -214,7 +214,8 @@ const pl: Translation = {
   ],
   ttDownloadBmp11: "Zapisz obraz jako BMP o proporcjach 1:1 (128x240)",
   ttDownloadBmp21: "Zapisz obraz jako BMP o proporcjach 2:1 (256x240)",
-  ttDelete: "Usuń"
+  ttDelete: "Usuń",
+  pasteHint: "…lub wklej ze schowka (Ctrl+V)"
 };
 
 export default pl;

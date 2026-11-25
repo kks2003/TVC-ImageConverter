@@ -213,4 +213,5 @@ export interface Translation {
   ttMaskVisibility?: string;
   maskActiveBadge?: string;
   colorNames?: string[];
+  pasteHint: string;
 }

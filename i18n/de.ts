@@ -214,7 +214,8 @@ const de: Translation = {
     "Dunkelcyan", "Dunkelgelb", "Grau", "Grün", 
     "Cyan", "Gelb", "Weiß"
   ],
-  ttDelete: "Löschen"
+  ttDelete: "Löschen",
+  pasteHint: "…oder aus der Zwischenablage einfügen (Strg+V)"
 };
 
 export default de;

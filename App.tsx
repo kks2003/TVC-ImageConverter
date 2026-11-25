@@ -19,6 +19,7 @@ import { FIXED_PALETTE } from './services/palette';
 import { downloadBlob } from './utils/download';
 import { TVC_MODES, ERROR_DIFFUSION_METHODS, DEFAULT_ADJUSTMENTS } from './services/constants';
 import { useCompositionDrag } from './hooks/useCompositionDrag';
+import { useClipboardImagePaste } from './hooks/useClipboardImagePaste';
 import { translations, Language } from './i18n';
 
 
@@ -319,6 +320,9 @@ const App: React.FC = () => {
     };
     reader.readAsDataURL(file);
   };
+
+  // Ctrl+V: load an image from the clipboard (not while the Pixel Editor is open).
+  useClipboardImagePaste(processFile, !editorConfig);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1017,6 +1021,7 @@ const App: React.FC = () => {
                 </div>
                 <p className="text-slate-300 font-medium text-lg">{t.selectImage}</p>
                 <p className="text-slate-500 text-sm mt-2 font-mono">{t.autoConversion}</p>
+                <p className="text-slate-500 text-xs mt-1">{t.pasteHint}</p>
                 
                 <div 
                   onClick={(e) => { e.stopPropagation(); setAutoCropBorder(!autoCropBorder); }}

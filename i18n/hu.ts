@@ -215,7 +215,8 @@ const hu: Translation = {
     "Kék", "Piros", "Lila", "Sötétzöld", 
     "Sötétcián", "Sötétsárga", "Szürke", "Zöld", 
     "Cián", "Sárga", "Fehér"
-  ]
+  ],
+  pasteHint: "…vagy illeszd be a vágólapról (Ctrl+V)"
 };
 
 export default hu;

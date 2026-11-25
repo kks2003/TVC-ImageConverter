@@ -213,7 +213,8 @@ const en: Translation = {
     "Blue", "Red", "Purple", "Dark Green", 
     "Dark Cyan", "Dark Yellow", "Grey", "Green", 
     "Cyan", "Yellow", "White"
-  ]
+  ],
+  pasteHint: "…or paste from the clipboard (Ctrl+V)"
 };
 
 export default en;

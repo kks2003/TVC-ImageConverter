@@ -214,7 +214,8 @@ const es: Translation = {
     "Cian oscuro", "Amarillo oscuro", "Gris", "Verde", 
     "Cian", "Amarillo", "Blanco"
   ],
-  ttDelete: "Eliminar"
+  ttDelete: "Eliminar",
+  pasteHint: "…o pégala desde el portapapeles (Ctrl+V)"
 };
 
 export default es;

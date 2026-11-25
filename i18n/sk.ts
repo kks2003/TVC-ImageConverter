@@ -214,7 +214,8 @@ const sk: Translation = {
   ttDownloadBmp21: "Uložiť obrázok ako BMP s pomerom strán 2:1 (256x240)",
   ttSaveOriginalSizeBtn: "Uložiť celý obrázok v pôvodnom rozlíšení s paletou TVC.",
   ttSaveCompositionBtn: "Uložiť aktuálny výrez (zoom/posun) v pevnom rozlíšení TVC.",
-  ttDelete: "Odstrániť"
+  ttDelete: "Odstrániť",
+  pasteHint: "…alebo vlož zo schránky (Ctrl+V)"
 };
 
 export default sk;

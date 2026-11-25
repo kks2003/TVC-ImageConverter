@@ -214,7 +214,8 @@ const ro: Translation = {
     "Cyan închis", "Galben închis", "Gri", "Verde", 
     "Cyan", "Galben", "Alb"
   ],
-  ttDelete: "Șterge"
+  ttDelete: "Șterge",
+  pasteHint: "…sau lipește din clipboard (Ctrl+V)"
 };
 
 export default ro;
