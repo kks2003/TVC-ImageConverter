@@ -245,7 +245,13 @@ const ro: Translation = {
   editorMergeDown: "Îmbină cu stratul de dedesubt",
   editorMoveLayerUp: "Mută stratul în sus",
   editorMoveLayerDown: "Mută stratul în jos",
-  editorLayerVisibility: "Afișează / ascunde (salvarea include doar straturile vizibile)"
+  editorLayerVisibility: "Afișează / ascunde (salvarea include doar straturile vizibile)",
+  ttRegion: "Pictează o regiune: zona pictată primește altă metodă de dithering (de ex. mai fină pe o față, plată pe fundal)",
+  regionDither: "Zona pictată:",
+  regionBrush: "Pensulă",
+  regionClear: "Șterge",
+  regionDone: "Gata",
+  regionHint: "Butonul stâng: pictează · dreptul: șterge · rotița: zoom"
 };
 
 export default ro;

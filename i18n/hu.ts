@@ -246,7 +246,13 @@ const hu: Translation = {
   editorMergeDown: "Összevonás az alatta lévővel",
   editorMoveLayerUp: "Réteg feljebb",
   editorMoveLayerDown: "Réteg lejjebb",
-  editorLayerVisibility: "Megjelenítés / elrejtés (a mentés csak a látható rétegeket tartalmazza)"
+  editorLayerVisibility: "Megjelenítés / elrejtés (a mentés csak a látható rétegeket tartalmazza)",
+  ttRegion: "Régió festése: a befestett terület más dither módszert kap (pl. finomabb az arcon, sima a háttéren)",
+  regionDither: "Festett rész:",
+  regionBrush: "Ecset",
+  regionClear: "Törlés",
+  regionDone: "Kész",
+  regionHint: "Bal gomb: festés · jobb gomb: törlés · görgő: nagyítás"
 };
 
 export default hu;

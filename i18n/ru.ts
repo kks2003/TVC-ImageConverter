@@ -245,7 +245,13 @@ const ru: Translation = {
   editorMergeDown: "Объединить с нижним слоем",
   editorMoveLayerUp: "Слой выше",
   editorMoveLayerDown: "Слой ниже",
-  editorLayerVisibility: "Показать / скрыть (сохраняются только видимые слои)"
+  editorLayerVisibility: "Показать / скрыть (сохраняются только видимые слои)",
+  ttRegion: "Закрасить область: закрашенная часть получает другой метод дизеринга (напр. тоньше на лице, ровно на фоне)",
+  regionDither: "Закрашенная часть:",
+  regionBrush: "Кисть",
+  regionClear: "Очистить",
+  regionDone: "Готово",
+  regionHint: "Левая кнопка: закрасить · правая: стереть · колесо: масштаб"
 };
 
 export default ru;

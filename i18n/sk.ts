@@ -245,7 +245,13 @@ const sk: Translation = {
   editorMergeDown: "Zlúčiť s vrstvou pod ňou",
   editorMoveLayerUp: "Vrstvu vyššie",
   editorMoveLayerDown: "Vrstvu nižšie",
-  editorLayerVisibility: "Zobraziť / skryť (uloženie obsahuje len viditeľné vrstvy)"
+  editorLayerVisibility: "Zobraziť / skryť (uloženie obsahuje len viditeľné vrstvy)",
+  ttRegion: "Vymaľovať oblasť: vymaľovaná časť dostane inú metódu ditheringu (napr. jemnejšiu na tvári, hladkú na pozadí)",
+  regionDither: "Vymaľovaná časť:",
+  regionBrush: "Štetec",
+  regionClear: "Vymazať",
+  regionDone: "Hotovo",
+  regionHint: "Ľavé tlačidlo: maľovanie · pravé: mazanie · koliesko: zoom"
 };
 
 export default sk;

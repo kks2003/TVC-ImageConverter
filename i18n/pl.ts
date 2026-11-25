@@ -245,7 +245,13 @@ const pl: Translation = {
   editorMergeDown: "Scal z warstwą poniżej",
   editorMoveLayerUp: "Przesuń warstwę w górę",
   editorMoveLayerDown: "Przesuń warstwę w dół",
-  editorLayerVisibility: "Pokaż / ukryj (zapis obejmuje tylko widoczne warstwy)"
+  editorLayerVisibility: "Pokaż / ukryj (zapis obejmuje tylko widoczne warstwy)",
+  ttRegion: "Maluj region: zamalowany obszar otrzymuje inną metodę ditheringu (np. drobniejszą na twarzy, gładką w tle)",
+  regionDither: "Zamalowany obszar:",
+  regionBrush: "Pędzel",
+  regionClear: "Wyczyść",
+  regionDone: "Gotowe",
+  regionHint: "Lewy przycisk: malowanie · prawy: wymazywanie · kółko: powiększenie"
 };
 
 export default pl;

@@ -245,7 +245,13 @@ const uk: Translation = {
   editorMergeDown: "Об'єднати з нижнім шаром",
   editorMoveLayerUp: "Шар вище",
   editorMoveLayerDown: "Шар нижче",
-  editorLayerVisibility: "Показати / сховати (зберігаються лише видимі шари)"
+  editorLayerVisibility: "Показати / сховати (зберігаються лише видимі шари)",
+  ttRegion: "Зафарбувати область: зафарбована частина отримує інший метод дизерингу (напр. тонший на обличчі, рівний на тлі)",
+  regionDither: "Зафарбована частина:",
+  regionBrush: "Пензель",
+  regionClear: "Очистити",
+  regionDone: "Готово",
+  regionHint: "Ліва кнопка: зафарбувати · права: стерти · коліщатко: масштаб"
 };
 
 export default uk;

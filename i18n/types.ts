@@ -244,4 +244,10 @@ export interface Translation {
   editorMoveLayerUp: string;
   editorMoveLayerDown: string;
   editorLayerVisibility: string;
+  ttRegion: string;
+  regionDither: string;
+  regionBrush: string;
+  regionClear: string;
+  regionDone: string;
+  regionHint: string;
 }

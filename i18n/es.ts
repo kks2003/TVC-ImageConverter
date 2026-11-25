@@ -245,7 +245,13 @@ const es: Translation = {
   editorMergeDown: "Combinar con la capa inferior",
   editorMoveLayerUp: "Subir capa",
   editorMoveLayerDown: "Bajar capa",
-  editorLayerVisibility: "Mostrar / ocultar (al guardar solo se incluyen las capas visibles)"
+  editorLayerVisibility: "Mostrar / ocultar (al guardar solo se incluyen las capas visibles)",
+  ttRegion: "Pintar una región: el área pintada recibe otro método de tramado (p. ej. más fino en una cara, liso en el fondo)",
+  regionDither: "Área pintada:",
+  regionBrush: "Pincel",
+  regionClear: "Borrar",
+  regionDone: "Listo",
+  regionHint: "Botón izquierdo: pintar · derecho: borrar · rueda: zoom"
 };
 
 export default es;

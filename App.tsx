@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Download, Layers, Image as ImageIcon, Monitor, Sun, Contrast, Zap, Palette as PaletteIcon, Move, RotateCcw, ArrowLeftRight, Maximize, X, Eye, EyeOff, Wand2, Expand, Info, Sparkles, Filter, Copy, Crop, Pencil, Columns2, Rainbow, Thermometer, Undo2, Redo2, LayoutGrid } from 'lucide-react';
+import { Upload, Download, Layers, Image as ImageIcon, Monitor, Sun, Contrast, Zap, Palette as PaletteIcon, Move, RotateCcw, ArrowLeftRight, Maximize, X, Eye, EyeOff, Wand2, Expand, Info, Sparkles, Filter, Copy, Crop, Pencil, Columns2, Rainbow, Thermometer, Undo2, Redo2, LayoutGrid, Paintbrush } from 'lucide-react';
 import Button from './components/Button';
 import ControlGroup from './components/ControlGroup';
 import Slider from './components/Slider';
@@ -11,6 +11,7 @@ import AutoTuneModal from './components/AutoTuneModal';
 import CompareOverlay from './components/CompareOverlay';
 import TemperatureFilter from './components/TemperatureFilter';
 import DitherGrid from './components/DitherGrid';
+import RegionPaintOverlay from './components/RegionPaintOverlay';
 import { ProcessingState, ProcessingSettings, PixelData, DitherMethod, ImageAdjustments } from './types';
 import { processImage, trimSolidBorder, generateTransparencyMask, createMaskedPreviewUrl, pairKey } from './services/imageProcessor';
 import { encodeBMP, encodeBMP4bpp, encodeEditorBin, TVCEditorMode, DEFAULT_ACTIVE_COLORS } from './services/bmpEncoder';
@@ -23,7 +24,7 @@ import { downloadBlob } from './utils/download';
 import { TVC_MODES, ERROR_DIFFUSION_METHODS, DEFAULT_ADJUSTMENTS } from './services/constants';
 import { useCompositionDrag } from './hooks/useCompositionDrag';
 import { renderCompositionPreview } from './services/composition';
-import { convertImage } from './services/convert';
+import { convertImageWithRegion } from './services/convert';
 import { ditherOptionGroups } from './services/ditherOptions';
 import { useClipboardImagePaste } from './hooks/useClipboardImagePaste';
 import { useUndoHistory } from './hooks/useUndoHistory';
@@ -145,6 +146,14 @@ const App: React.FC = () => {
   const [maskedPreviewUrl, setMaskedPreviewUrl] = useState<string | null>(null);
   const [compareMode, setCompareMode] = useState(false);
   const [showDitherGrid, setShowDitherGrid] = useState(false);
+  // Region dithering: a painted mask over the result that gets its own method.
+  const [regionPaint, setRegionPaint] = useState(false);
+  const [regionDither, setRegionDither] = useState<DitherMethod>('none');
+  const [regionBrush, setRegionBrush] = useState(6);
+  const [regionVersion, setRegionVersion] = useState(0);
+  const regionMaskRef = useRef<{ mask: Uint8Array; w: number; h: number } | null>(null);
+  const regionDitherRef = useRef<DitherMethod>('none');
+  regionDitherRef.current = regionDither;
   const [comparePosition, setComparePosition] = useState(50);
   const [compareBeforeUrl, setCompareBeforeUrl] = useState<string | null>(null);
 
@@ -181,7 +190,9 @@ const App: React.FC = () => {
     setError(null);
 
     try {
-      const conv = await convertImage(img, currentSettings);
+      const rm = regionMaskRef.current;
+      const conv = await convertImageWithRegion(img, currentSettings,
+        rm ? { mask: rm.mask, width: rm.w, height: rm.h, ditherMethod: regionDitherRef.current } : null);
 
       setTransparencyMask(null);
       setMaskedPreviewUrl(null);
@@ -264,6 +275,8 @@ const App: React.FC = () => {
         setSettingsMap(newSettingsMap);
         setCurrentMode('tvc-16');
         setViewTransform({ x: 0, y: 0, scale: 1 }); // Reset view
+        regionMaskRef.current = null;
+        setRegionPaint(false);
         startProcessing(finalImg, newSettingsMap['tvc-16']);
       };
       img.src = event.target?.result as string;
@@ -854,6 +867,8 @@ const App: React.FC = () => {
   };
 
   const reset = () => {
+    regionMaskRef.current = null;
+    setRegionPaint(false);
     setState(ProcessingState.IDLE);
     setPixelData(null);
     setSourceImage(null);
@@ -872,6 +887,21 @@ const App: React.FC = () => {
 
   // Source image framed like the conversion, for the before/after wipe.
   const compareAvailable = !isOriginalMode && !!pixelData && !!sourceImage;
+
+  // Region mask sized to the current result; a new one starts when the
+  // output size changes (an old mask of another size is simply not used).
+  const regionMaskForResult = () => {
+    if (!pixelData) return null;
+    const cur = regionMaskRef.current;
+    if (cur && cur.w === pixelData.width && cur.h === pixelData.height) return cur;
+    const fresh = { mask: new Uint8Array(pixelData.width * pixelData.height), w: pixelData.width, h: pixelData.height };
+    regionMaskRef.current = fresh;
+    return fresh;
+  };
+  const regionActive = !!pixelData && !!regionMaskRef.current && regionMaskRef.current.w === pixelData.width
+    && regionMaskRef.current.h === pixelData.height && regionMaskRef.current.mask.some((v) => v);
+  const reprocess = () => { if (sourceImage) startProcessing(sourceImage, settings); };
+  const clearRegion = () => { regionMaskRef.current = null; setRegionVersion((v) => v + 1); reprocess(); };
   useEffect(() => {
     if (!compareMode || !compareAvailable || !sourceImage) { setCompareBeforeUrl(null); return; }
     let cancelled = false;
@@ -1502,7 +1532,18 @@ const App: React.FC = () => {
                         )}
                         {compareAvailable && (
                           <button
-                            onClick={() => setCompareMode((v) => !v)}
+                            onClick={() => { setRegionPaint((v) => !v); setCompareMode(false); }}
+                            className={`p-2 rounded-full transition-colors shadow-lg backdrop-blur-sm ${regionPaint ? 'bg-pink-600 hover:bg-pink-500 text-white ring-2 ring-pink-400' : regionActive ? 'bg-slate-800/80 text-pink-300 ring-2 ring-pink-500/60' : 'bg-slate-800/80 hover:bg-slate-700 text-slate-200'}`}
+                            title={t.ttRegion}
+                            aria-pressed={regionPaint}
+                            data-testid="region-toggle"
+                          >
+                            <Paintbrush size={20} />
+                          </button>
+                        )}
+                        {compareAvailable && (
+                          <button
+                            onClick={() => { setCompareMode((v) => !v); setRegionPaint(false); }}
                             className={`p-2 rounded-full transition-colors shadow-lg backdrop-blur-sm ${compareMode ? 'bg-blue-600 hover:bg-blue-500 text-white ring-2 ring-blue-400' : 'bg-slate-800/80 hover:bg-slate-700 text-slate-200'}`}
                             title={t.ttCompare}
                             aria-pressed={compareMode}
@@ -1531,7 +1572,7 @@ const App: React.FC = () => {
                         className={`w-full h-full relative ${isDragging ? 'cursor-grabbing' : 'cursor-move'} flex items-center justify-center`}
                         style={{ backgroundColor: settings.backgroundColor }}
                       >
-                        {compareMode && compareBeforeUrl && !isOriginalMode ? (
+                        {((compareMode && compareBeforeUrl) || regionPaint) && !isOriginalMode ? (
                           <div
                             className="relative"
                             style={{
@@ -1547,6 +1588,22 @@ const App: React.FC = () => {
                               alt="Pixelated"
                               className="pixelated w-full h-full pointer-events-none select-none"
                             />
+                            {regionPaint && (() => {
+                              const rm = regionMaskForResult();
+                              return rm && (
+                                <RegionPaintOverlay
+                                  mask={rm.mask}
+                                  w={rm.w}
+                                  h={rm.h}
+                                  pixelAspectX={visualAspect * rm.h / rm.w}
+                                  brush={regionBrush}
+                                  version={regionVersion}
+                                  onStrokeEnd={() => { setRegionVersion((v) => v + 1); reprocess(); }}
+                                  title={t.regionHint}
+                                />
+                              );
+                            })()}
+                            {compareMode && compareBeforeUrl && (
                             <CompareOverlay
                               beforeUrl={compareBeforeUrl}
                               position={comparePosition}
@@ -1555,6 +1612,7 @@ const App: React.FC = () => {
                               afterLabel={t.compareAfter}
                               sliderTitle={t.compareDivider}
                             />
+                            )}
                           </div>
                         ) : (
                           <img 
@@ -1580,6 +1638,33 @@ const App: React.FC = () => {
                     )}
                     {!pixelData && <div className="text-slate-600 mono">{t.noData}</div>}
                   </div>
+                  {regionPaint && compareAvailable && (
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 p-2 rounded-lg border border-pink-800/50 bg-pink-950/30 text-[11px] text-slate-300" data-testid="region-controls">
+                      <label className="flex items-center gap-1.5">
+                        <span>{t.regionDither}</span>
+                        <select
+                          value={regionDither}
+                          onChange={(e) => { const m = e.target.value as DitherMethod; setRegionDither(m); regionDitherRef.current = m; reprocess(); }}
+                          className="bg-slate-800 border border-slate-700 text-slate-200 rounded p-1 mono text-[11px]"
+                        >
+                          {ditherOptionGroups(t).map((group, gi) => {
+                            const options = group.items.map((o) => <option key={o.value} value={o.value}>{o.label}</option>);
+                            return group.label === null
+                              ? <React.Fragment key={gi}>{options}</React.Fragment>
+                              : <optgroup key={gi} label={group.label}>{options}</optgroup>;
+                          })}
+                        </select>
+                      </label>
+                      <label className="flex items-center gap-1.5">
+                        <span>{t.regionBrush}</span>
+                        <input type="range" min={1} max={24} value={regionBrush} onChange={(e) => setRegionBrush(parseInt(e.target.value))} className="w-20 accent-pink-500" />
+                        <span className="mono w-5">{regionBrush}</span>
+                      </label>
+                      <button onClick={clearRegion} className="px-2 py-0.5 rounded border border-slate-700 bg-slate-800/80 hover:bg-slate-700">{t.regionClear}</button>
+                      <button onClick={() => setRegionPaint(false)} className="px-2 py-0.5 rounded bg-pink-600 hover:bg-pink-500 text-white">{t.regionDone}</button>
+                      <span className="text-slate-500 basis-full">{t.regionHint}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center text-[11px] text-slate-500 mono">
                      <div className="flex items-center gap-2">
                        <span>{pixelData ? `${pixelData.width} x ${pixelData.height}` : '-'}</span>

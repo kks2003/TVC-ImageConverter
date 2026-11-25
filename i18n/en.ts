@@ -244,7 +244,13 @@ const en: Translation = {
   editorMergeDown: "Merge into the layer below",
   editorMoveLayerUp: "Move layer up",
   editorMoveLayerDown: "Move layer down",
-  editorLayerVisibility: "Show / hide (saving includes only visible layers)"
+  editorLayerVisibility: "Show / hide (saving includes only visible layers)",
+  ttRegion: "Paint a region: the painted area gets a different dither method (e.g. finer on a face, flat on the background)",
+  regionDither: "Painted area:",
+  regionBrush: "Brush",
+  regionClear: "Clear",
+  regionDone: "Done",
+  regionHint: "Left button: paint · right button: erase · wheel: zoom"
 };
 
 export default en;

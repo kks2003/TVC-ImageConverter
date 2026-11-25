@@ -245,7 +245,13 @@ const de: Translation = {
   editorMergeDown: "Mit der Ebene darunter zusammenführen",
   editorMoveLayerUp: "Ebene nach oben",
   editorMoveLayerDown: "Ebene nach unten",
-  editorLayerVisibility: "Ein-/ausblenden (gespeichert werden nur sichtbare Ebenen)"
+  editorLayerVisibility: "Ein-/ausblenden (gespeichert werden nur sichtbare Ebenen)",
+  ttRegion: "Region malen: der bemalte Bereich bekommt ein anderes Dither-Verfahren (z. B. feiner im Gesicht, flach im Hintergrund)",
+  regionDither: "Bemalter Bereich:",
+  regionBrush: "Pinsel",
+  regionClear: "Löschen",
+  regionDone: "Fertig",
+  regionHint: "Linke Taste: malen · rechte Taste: radieren · Mausrad: Zoom"
 };
 
 export default de;
