@@ -13,7 +13,7 @@ describe('compositionRect', () => {
     expect(compositionRect(400, 200, 256, 240, 'stretch', 3, 0, 100)).toEqual({ x: 0, y: 0, w: 256, h: 240 });
   });
   it('zoom and position move the frame', () => {
-    expect(compositionRect(256, 240, 256, 240, 'cover', 2, 0, 100)).toEqual({ x: 0, y: -240, w: 512, h: 480 });
+    expect(compositionRect(256, 240, 256, 240, 'cover', 2, 100, 100)).toEqual({ x: -256, y: -240, w: 512, h: 480 });
   });
 });
 
