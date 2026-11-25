@@ -221,7 +221,9 @@ const ru: Translation = {
   compareAfter: "TVC",
   compareDivider: "Разделитель (перетащите или используйте клавиши ← →)",
   hue: "Оттенок",
-  temperature: "Цветовая температура"
+  temperature: "Цветовая температура",
+  ttUndo: "Отменить изменение настроек (Ctrl+Z)",
+  ttRedo: "Повторить изменение настроек (Ctrl+Y или Ctrl+Shift+Z)"
 };
 
 export default ru;

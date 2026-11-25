@@ -221,7 +221,9 @@ const ro: Translation = {
   compareAfter: "TVC",
   compareDivider: "Separator (trage sau folosește tastele ← →)",
   hue: "Nuanță",
-  temperature: "Temperatura culorii"
+  temperature: "Temperatura culorii",
+  ttUndo: "Anulează modificarea setărilor (Ctrl+Z)",
+  ttRedo: "Refă modificarea setărilor (Ctrl+Y sau Ctrl+Shift+Z)"
 };
 
 export default ro;

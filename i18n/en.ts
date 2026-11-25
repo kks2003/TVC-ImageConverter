@@ -220,7 +220,9 @@ const en: Translation = {
   compareAfter: "TVC",
   compareDivider: "Divider (drag, or use the ← → keys)",
   hue: "Hue",
-  temperature: "Temperature"
+  temperature: "Temperature",
+  ttUndo: "Undo settings change (Ctrl+Z)",
+  ttRedo: "Redo settings change (Ctrl+Y or Ctrl+Shift+Z)"
 };
 
 export default en;

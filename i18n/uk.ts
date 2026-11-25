@@ -221,7 +221,9 @@ const uk: Translation = {
   compareAfter: "TVC",
   compareDivider: "Роздільник (перетягніть або використовуйте клавіші ← →)",
   hue: "Відтінок",
-  temperature: "Колірна температура"
+  temperature: "Колірна температура",
+  ttUndo: "Скасувати зміну налаштувань (Ctrl+Z)",
+  ttRedo: "Повторити зміну налаштувань (Ctrl+Y або Ctrl+Shift+Z)"
 };
 
 export default uk;

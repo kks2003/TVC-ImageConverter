@@ -221,7 +221,9 @@ const de: Translation = {
   compareAfter: "TVC",
   compareDivider: "Trenner (ziehen oder ← → Tasten verwenden)",
   hue: "Farbton",
-  temperature: "Farbtemperatur"
+  temperature: "Farbtemperatur",
+  ttUndo: "Einstellungsänderung rückgängig (Strg+Z)",
+  ttRedo: "Einstellungsänderung wiederholen (Strg+Y oder Strg+Umschalt+Z)"
 };
 
 export default de;

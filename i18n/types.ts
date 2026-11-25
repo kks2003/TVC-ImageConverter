@@ -220,4 +220,6 @@ export interface Translation {
   compareDivider: string;
   hue: string;
   temperature: string;
+  ttUndo: string;
+  ttRedo: string;
 }

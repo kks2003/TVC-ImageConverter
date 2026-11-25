@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Download, Layers, Image as ImageIcon, Monitor, Sun, Contrast, Zap, Palette as PaletteIcon, Move, RotateCcw, ArrowLeftRight, Maximize, X, Eye, EyeOff, Wand2, Expand, Info, Sparkles, Filter, Copy, Crop, Pencil, Columns2, Rainbow, Thermometer } from 'lucide-react';
+import { Upload, Download, Layers, Image as ImageIcon, Monitor, Sun, Contrast, Zap, Palette as PaletteIcon, Move, RotateCcw, ArrowLeftRight, Maximize, X, Eye, EyeOff, Wand2, Expand, Info, Sparkles, Filter, Copy, Crop, Pencil, Columns2, Rainbow, Thermometer, Undo2, Redo2 } from 'lucide-react';
 import Button from './components/Button';
 import ControlGroup from './components/ControlGroup';
 import Slider from './components/Slider';
@@ -23,6 +23,8 @@ import { TVC_MODES, ERROR_DIFFUSION_METHODS, DEFAULT_ADJUSTMENTS } from './servi
 import { useCompositionDrag } from './hooks/useCompositionDrag';
 import { renderCompositionPreview } from './services/composition';
 import { useClipboardImagePaste } from './hooks/useClipboardImagePaste';
+import { useUndoHistory } from './hooks/useUndoHistory';
+import { useUndoRedoKeys } from './hooks/useUndoRedoKeys';
 import { translations, Language } from './i18n';
 
 
@@ -573,6 +575,23 @@ const App: React.FC = () => {
       return updated;
     });
   };
+
+  // Undo/redo of converter settings (all modes + which mode is active).
+  // Starts over for each new image.
+  const settingsSnapshot = React.useMemo(() => ({ map: settingsMap, mode: currentMode }), [settingsMap, currentMode]);
+  const settingsHistory = useUndoHistory(settingsSnapshot, sourceImage, (a, b) => a.map === b.map && a.mode === b.mode);
+  const applySettingsSnapshot = (snap: typeof settingsSnapshot | null) => {
+    if (!snap) return;
+    setSettingsMap(snap.map);
+    setCurrentMode(snap.mode);
+    if (sourceImage) {
+      if (processingDebounceRef.current) clearTimeout(processingDebounceRef.current);
+      startProcessing(sourceImage, snap.map[snap.mode]);
+    }
+  };
+  const undoSettings = () => applySettingsSnapshot(settingsHistory.undo());
+  const redoSettings = () => applySettingsSnapshot(settingsHistory.redo());
+  useUndoRedoKeys(undoSettings, redoSettings, !editorConfig && !!sourceImage);
 
   const handleAutoTune = async (tuningStrategy: 'artistic' | 'fidelity' | 'flat' | 'precision' = 'artistic') => {
     if (!sourceImage) return;
@@ -1252,6 +1271,22 @@ const App: React.FC = () => {
                     >
                       <Maximize size={10} className="text-cyan-400" />
                       <span>A4</span>
+                    </button>
+                    <button
+                      onClick={undoSettings}
+                      disabled={!settingsHistory.canUndo}
+                      className="text-[9px] sm:text-[10px] text-slate-500 hover:text-blue-400 disabled:opacity-30 disabled:pointer-events-none flex items-center mono flex-shrink-0"
+                      title={t.ttUndo}
+                    >
+                      <Undo2 size={10} />
+                    </button>
+                    <button
+                      onClick={redoSettings}
+                      disabled={!settingsHistory.canRedo}
+                      className="text-[9px] sm:text-[10px] text-slate-500 hover:text-blue-400 disabled:opacity-30 disabled:pointer-events-none flex items-center mono flex-shrink-0"
+                      title={t.ttRedo}
+                    >
+                      <Redo2 size={10} />
                     </button>
                     <button 
                       onClick={resetAdjustments}

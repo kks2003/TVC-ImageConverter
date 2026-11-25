@@ -221,7 +221,9 @@ const es: Translation = {
   compareAfter: "TVC",
   compareDivider: "Divisor (arrastra o usa las teclas ← →)",
   hue: "Tono",
-  temperature: "Temperatura de color"
+  temperature: "Temperatura de color",
+  ttUndo: "Deshacer cambio de ajustes (Ctrl+Z)",
+  ttRedo: "Rehacer cambio de ajustes (Ctrl+Y o Ctrl+Mayús+Z)"
 };
 
 export default es;

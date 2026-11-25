@@ -221,7 +221,9 @@ const sk: Translation = {
   compareAfter: "TVC",
   compareDivider: "Oddeľovač (potiahni alebo použi klávesy ← →)",
   hue: "Odtieň",
-  temperature: "Farebná teplota"
+  temperature: "Farebná teplota",
+  ttUndo: "Vrátiť zmenu nastavení (Ctrl+Z)",
+  ttRedo: "Znova použiť zmenu nastavení (Ctrl+Y alebo Ctrl+Shift+Z)"
 };
 
 export default sk;

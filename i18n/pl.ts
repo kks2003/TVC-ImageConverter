@@ -221,7 +221,9 @@ const pl: Translation = {
   compareAfter: "TVC",
   compareDivider: "Separator (przeciągnij lub użyj klawiszy ← →)",
   hue: "Odcień",
-  temperature: "Temperatura barwowa"
+  temperature: "Temperatura barwowa",
+  ttUndo: "Cofnij zmianę ustawień (Ctrl+Z)",
+  ttRedo: "Ponów zmianę ustawień (Ctrl+Y lub Ctrl+Shift+Z)"
 };
 
 export default pl;

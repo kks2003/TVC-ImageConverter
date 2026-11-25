@@ -222,7 +222,9 @@ const hu: Translation = {
   compareAfter: "TVC",
   compareDivider: "Elválasztó (húzd, vagy használd a ← → nyilakat)",
   hue: "Színárnyalat",
-  temperature: "Színhőmérséklet"
+  temperature: "Színhőmérséklet",
+  ttUndo: "Beállítás visszavonása (Ctrl+Z)",
+  ttRedo: "Beállítás újra (Ctrl+Y vagy Ctrl+Shift+Z)"
 };
 
 export default hu;
